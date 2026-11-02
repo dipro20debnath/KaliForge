@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (QButtonGroup, QHBoxLayout, QLabel, QLineEdit,
-                               QScrollArea, QVBoxLayout, QWidget)
+                               QPushButton, QScrollArea, QVBoxLayout, QWidget)
 
 from core.categories import CATEGORIES
 from ui.widgets.common import Chip, FlowLayout
@@ -35,6 +35,11 @@ class ArsenalPage(QWidget):
         self.count_lbl = QLabel("")
         self.count_lbl.setObjectName("Hint")
         head.addWidget(self.count_lbl)
+        refresh = QPushButton("⟳ Re-detect")
+        refresh.setObjectName("Ghost")
+        refresh.setToolTip("Re-scan the system for newly installed tools")
+        refresh.clicked.connect(self.redetect)
+        head.addWidget(refresh)
         layout.addLayout(head)
 
         self.search = QLineEdit()
@@ -78,6 +83,19 @@ class ArsenalPage(QWidget):
         self.flow = FlowLayout(self.grid_host, margin=2, spacing=12)
         self.scroll.setWidget(self.grid_host)
         layout.addWidget(self.scroll, 1)
+
+    def showEvent(self, event):  # noqa: N802
+        # re-scan every time the page is shown so newly installed tools appear
+        self.app.tools.detect_all()
+        self.rebuild()
+        super().showEvent(event)
+
+    def redetect(self) -> None:
+        counts = self.app.tools.detect_all()
+        self.rebuild()
+        installed = sum(1 for s in self.app.tools._status.values()
+                        if s.installed and not s.builtin)
+        self.count_lbl.setText(f"re-scanned · {installed} installed")
 
     def set_category(self, category: str) -> None:
         """Called externally (sidebar / dashboard quick access)."""

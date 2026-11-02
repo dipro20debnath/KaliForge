@@ -149,6 +149,7 @@ class DashboardPage(QWidget):
         super().hideEvent(event)
 
     def refresh(self) -> None:
+        self.app.tools.detect_all()   # pick up tools installed since launch
         stats = self.app.dashboard_stats()
         for key, card in self.cards.items():
             card.set_value(stats.get(key, "—"))

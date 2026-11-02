@@ -71,6 +71,11 @@ class InstallerPage(QWidget):
         actions.addWidget(self.run_btn)
         layout.addLayout(actions)
 
+    def showEvent(self, event):  # noqa: N802
+        self.app.tools.detect_all()   # reflect tools installed since last view
+        self.refresh()
+        super().showEvent(event)
+
     def refresh(self) -> None:
         self._missing = self.app.installer.missing()
         self.table.setRowCount(len(self._missing))

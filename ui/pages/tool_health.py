@@ -51,6 +51,11 @@ class ToolHealthPage(QWidget):
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
         layout.addWidget(self.table, 1)
 
+    def showEvent(self, event):  # noqa: N802
+        self.app.tools.detect_all()   # reflect newly installed tools
+        self.refresh(probe=False)
+        super().showEvent(event)
+
     def refresh(self, probe: bool = False) -> None:
         if probe:
             self.check_btn.setEnabled(False)
