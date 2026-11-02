@@ -11,9 +11,11 @@ from core.config import APP_NAME
 from ui.pages.ai_assistant import AssistantPage
 from ui.pages.arsenal import ArsenalPage
 from ui.pages.attack_surface import AttackSurfacePage
+from ui.pages.credentials import CredentialsPage
 from ui.pages.dashboard import DashboardPage
 from ui.pages.evidence import EvidencePage
 from ui.pages.hosts import HostsPage
+from ui.pages.methodology import MethodologyPage
 from ui.pages.importer import ImporterPage
 from ui.pages.installer import InstallerPage
 from ui.pages.lab_env import LabEnvPage
@@ -30,6 +32,7 @@ from ui.pages.toolkit import ToolkitPage
 from ui.pages.vault import VaultPage
 from ui.pages.vulnerability import VulnerabilityPage
 from ui.pages.workflows import WorkflowsPage
+from ui.pages.workspaces import WorkspacesPage
 from ui.run_controller import RunController
 from ui.sidebar import NAV, Sidebar
 from ui.theme import stylesheet
@@ -99,6 +102,22 @@ class MainWindow(QMainWindow):
                 label=v["title"], hint="run · vault",
                 action=lambda c=v["command"]: self._run_from_signal(c, ""),
                 keywords=v.get("tags", "")))
+        # global search: findings, notes, hosts
+        ws = self.app.active_workspace_id()
+        for f in self.app.db.findings(ws):
+            entries.append(PaletteEntry(
+                label=f["title"], hint=f"finding · {f.get('severity', '')} · {f.get('host', '')}",
+                action=lambda: self.navigate("vulnerability"),
+                keywords=f"{f.get('cve', '')} {f.get('host', '')}"))
+        for n in self.app.db.notes(ws):
+            entries.append(PaletteEntry(
+                label=n["title"], hint="note", action=lambda: self.navigate("vault"),
+                keywords=n.get("tags", "")))
+        from core.hosts import host_overview
+        for h in host_overview(self.app.db, ws):
+            entries.append(PaletteEntry(
+                label=h.host, hint=f"host · {h.open_ports} ports · {h.top_severity}",
+                action=lambda: self.navigate("hosts")))
         CommandPalette(entries, self).exec()
 
     # ------------------------------------------------------------- pages
@@ -161,6 +180,15 @@ class MainWindow(QMainWindow):
         self.importer.status_message.connect(self._status)
         self.importer.data_imported.connect(self._on_imported)
 
+        # phase: charts/checklist/creds/workspaces
+        self.methodology = MethodologyPage(self.app)
+        self.methodology.status_message.connect(self._status)
+        self.credentials = CredentialsPage(self.app)
+        self.credentials.status_message.connect(self._status)
+        self.workspaces_page = WorkspacesPage(self.app)
+        self.workspaces_page.status_message.connect(self._status)
+        self.workspaces_page.workspace_switched.connect(self._on_workspace_switched)
+
         for key, page in [
             ("dashboard", self.dashboard), ("arsenal", self.arsenal),
             ("terminal", self.terminal), ("vulnerability", self.vulnerability),
@@ -173,7 +201,8 @@ class MainWindow(QMainWindow):
             ("installer", self.installer), ("learning", self.learning),
             ("lab_env", self.lab_env), ("hosts", self.hosts),
             ("toolkit", self.toolkit), ("payloads", self.payloads),
-            ("importer", self.importer),
+            ("importer", self.importer), ("methodology", self.methodology),
+            ("credentials", self.credentials), ("workspaces", self.workspaces_page),
         ]:
             self._pages[key] = page
             self.stack.addWidget(page)
@@ -209,6 +238,17 @@ class MainWindow(QMainWindow):
         self.hosts.refresh()
         self.attack_surface.refresh()
         self._status("Scan data imported into findings, hosts and attack surface.")
+
+    def _on_workspace_switched(self) -> None:
+        # the active workspace changed — refresh everything workspace-scoped
+        for page in (self.dashboard, self.vulnerability, self.hosts, self.scope,
+                     self.attack_surface, self.methodology, self.credentials,
+                     self.evidence):
+            if hasattr(page, "refresh"):
+                try:
+                    page.refresh()
+                except Exception:  # noqa: BLE001
+                    pass
 
     # ------------------------------------------------------------- tool launch
     def _open_tool(self, tool_id: str) -> None:

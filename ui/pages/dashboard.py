@@ -7,6 +7,9 @@ from PySide6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QPushButton,
                                QScrollArea, QVBoxLayout, QWidget)
 
 from core.system_monitor import human_bytes
+from database.models import SEVERITIES
+from ui.theme import severity_color
+from ui.widgets.charts import BarChart, DonutChart, Legend
 from ui.widgets.common import Card, Meter, StatCard
 
 QUICK = [
@@ -67,6 +70,26 @@ class DashboardPage(QWidget):
             self.cards[key] = card
             grid.addWidget(card, 0, col)
         layout.addLayout(grid)
+
+        # charts row
+        charts = QHBoxLayout()
+        charts.setSpacing(14)
+        sev_card = Card()
+        sev_card.layout().addWidget(_h("Findings by Severity"))
+        donut_row = QHBoxLayout()
+        self.sev_donut = DonutChart()
+        donut_row.addWidget(self.sev_donut, 1)
+        sev_card.layout().addLayout(donut_row)
+        self.sev_legend = Legend()
+        sev_card.layout().addWidget(self.sev_legend)
+        charts.addWidget(sev_card, 1)
+
+        tools_card = Card()
+        tools_card.layout().addWidget(_h("Tool Arsenal Status"))
+        self.tools_bar = BarChart()
+        tools_card.layout().addWidget(self.tools_bar)
+        charts.addWidget(tools_card, 1)
+        layout.addLayout(charts)
 
         # quick access
         quick_card = Card()
@@ -129,8 +152,29 @@ class DashboardPage(QWidget):
         stats = self.app.dashboard_stats()
         for key, card in self.cards.items():
             card.set_value(stats.get(key, "—"))
+        self.refresh_charts(stats)
         self.refresh_monitor()
         self.refresh_activity()
+
+    def refresh_charts(self, stats: dict) -> None:
+        theme = self.app.settings.get("appearance.theme", "kali_neon")
+        counts = self.app.db.severity_counts(self.app.active_workspace_id())
+        segments, legend = [], []
+        for sev in SEVERITIES:
+            n = counts.get(sev, 0)
+            color = severity_color(theme, sev)
+            if n:
+                segments.append((sev, n, color))
+            legend.append((f"{sev} {n}", color))
+        total = sum(counts.get(s, 0) for s in SEVERITIES)
+        self.sev_donut.set_data(segments, str(total))
+        self.sev_legend.set_items(legend)
+        pal = {"installed": "#2ecc71", "builtin": "#3fa9ff", "missing": "#ff8c1a"}
+        self.tools_bar.set_data([
+            ("Installed", stats.get("installed", 0), pal["installed"]),
+            ("Built-in", stats.get("builtin", 0), pal["builtin"]),
+            ("Missing", stats.get("missing", 0), pal["missing"]),
+        ])
 
     def refresh_monitor(self) -> None:
         sample = self.app.monitor.sample()

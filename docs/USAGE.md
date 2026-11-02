@@ -112,6 +112,20 @@ confirmation flow before running.
 - **Hosts** — pick a host to see all its open ports/services and findings in one
   place; add it to scope from there.
 
+## Tracking & workspaces
+
+- **Dashboard charts** — the dashboard shows a findings-by-severity donut and a
+  tool-status bar chart that update as you work.
+- **Methodology** — pick OWASP WSTG or PTES, tick items as you complete them; the
+  progress bar and per-item state are saved per workspace.
+- **Credentials** — store discovered credentials (encrypted at rest). Toggle
+  *Reveal* to show passwords; double-click a row to copy its password.
+- **Workspaces** — create/switch/delete engagements; *Export* writes a `.kfw`
+  backup of the whole workspace (findings, scope, assets, notes, checklist,
+  credentials and evidence), and *Import* restores it as a new workspace.
+- **Global search** — `Ctrl+K` searches pages, tools, saved commands **and** your
+  findings, notes and hosts.
+
 ## Settings
 
 - **Appearance** — three themes (Kali Neon, Cyber Cyan, SOC Pro), font size.

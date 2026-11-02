@@ -162,6 +162,27 @@ CREATE TABLE IF NOT EXISTS workflow_runs (
     summary TEXT DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS checklist_state (
+    workspace_id INTEGER,
+    template TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    checked INTEGER DEFAULT 0,
+    note TEXT DEFAULT '',
+    updated TEXT,
+    PRIMARY KEY (workspace_id, template, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS credentials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    workspace_id INTEGER,
+    host TEXT DEFAULT '',
+    service TEXT DEFAULT '',
+    username TEXT DEFAULT '',
+    secret TEXT DEFAULT '',
+    note TEXT DEFAULT '',
+    created TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_log(ts);
 CREATE INDEX IF NOT EXISTS idx_findings_ws ON findings(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_assets_ws ON assets(workspace_id);

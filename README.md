@@ -62,6 +62,14 @@ one dark, modern dashboard, with authorisation guard-rails built into its core.
 - **Scan Import** — parse nmap (XML & normal), nuclei JSON and gobuster output into **findings + attack-surface assets** automatically.
 - **Hosts** — a host-centric view aggregating every host's open ports/services and findings in one place.
 
+### Tracking & workspaces
+
+- **Dashboard charts** — a findings-by-severity donut and a tool-status bar chart drawn natively (no plotting libraries).
+- **Methodology Checklist** — track progress through OWASP WSTG and PTES per engagement, with a live progress bar.
+- **Credentials Manager** — store discovered credentials per workspace, encrypted at rest (reveal/hide, copy).
+- **Global search** — the `Ctrl+K` palette also searches findings, notes and hosts, not just pages and tools.
+- **Workspaces** — create/switch/delete engagements from the UI, and **export/import** a whole workspace as a portable `.kfw` backup.
+
 ## 📸 Screenshots
 
 ### Core
@@ -107,6 +115,14 @@ one dark, modern dashboard, with authorisation guard-rails built into its core.
 | ![Crypto toolkit](docs/screenshots/21-crypto-toolkit.png) | ![Payloads](docs/screenshots/22-payloads.png) |
 | **Scan Import (nmap / nuclei / gobuster)** | **Hosts (aggregated view)** |
 | ![Scan import](docs/screenshots/23-scan-import.png) | ![Hosts](docs/screenshots/24-hosts.png) |
+
+### Tracking & workspaces
+
+| Methodology Checklist (WSTG / PTES) | Credentials Manager (encrypted) |
+|---|---|
+| ![Methodology](docs/screenshots/25-methodology.png) | ![Credentials](docs/screenshots/26-credentials.png) |
+| **Workspaces (export / import)** | *(the dashboard above carries the charts)* |
+| ![Workspaces](docs/screenshots/27-workspaces.png) | |
 
 > Screenshots rendered from the running app (Kali Neon theme) with sample
 > engagement data.

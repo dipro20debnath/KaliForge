@@ -152,3 +152,27 @@ class SecretVault:
 
     def has(self, name: str) -> bool:
         return bool(self.get(name))
+
+    # ---------------------------------------------------- value encryption
+    def encrypt(self, text: str) -> str:
+        """Encrypt an arbitrary value for storage in the app DB (e.g. a
+        credential). Returns a tagged token so decryption knows the scheme."""
+        if self._fernet is not None:
+            return "enc:" + self._fernet.encrypt((text or "").encode()).decode()
+        return "raw:" + (text or "")
+
+    def decrypt(self, token: str) -> str:
+        if not token:
+            return ""
+        if token.startswith("enc:") and self._fernet is not None:
+            try:
+                return self._fernet.decrypt(token[4:].encode()).decode("utf-8", "replace")
+            except InvalidToken:
+                return ""
+        if token.startswith("raw:"):
+            return token[4:]
+        return token
+
+    @property
+    def encrypts_values(self) -> bool:
+        return self._fernet is not None

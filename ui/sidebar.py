@@ -29,6 +29,7 @@ NAV = [
         ("workflows", "Workflows"),
         ("assistant", "AI Assistant"),
         ("scope", "Scope Manager"),
+        ("methodology", "Methodology"),
         ("monitor", "System Monitor"),
     ]),
     ("ADVANCED", [
@@ -45,7 +46,9 @@ NAV = [
         ("importer", "Scan Import"),
     ]),
     ("MANAGE", [
+        ("workspaces", "Workspaces"),
         ("vault", "Vault & Notes"),
+        ("credentials", "Credentials"),
         ("evidence", "Evidence & Labs"),
         ("reports", "Reports"),
         ("plugins", "Plugins"),

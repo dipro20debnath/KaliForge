@@ -356,3 +356,37 @@ class Database:
 
     def workflow_runs(self, workspace_id: int | None) -> list[dict]:
         return self.query("SELECT * FROM workflow_runs WHERE workspace_id IS ? ORDER BY id DESC", (workspace_id,))
+
+    # ---------------------------------------------------------- checklist
+    def set_checklist_item(self, workspace_id: int | None, template: str,
+                           item_id: str, checked: bool, note: str = "") -> None:
+        self.execute(
+            "INSERT INTO checklist_state(workspace_id, template, item_id, checked, note, updated) "
+            "VALUES(?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(workspace_id, template, item_id) DO UPDATE SET "
+            "checked=excluded.checked, note=excluded.note, updated=excluded.updated",
+            (workspace_id, template, item_id, 1 if checked else 0, note, utcnow()),
+        )
+
+    def checklist_state(self, workspace_id: int | None, template: str) -> dict[str, dict]:
+        rows = self.query(
+            "SELECT * FROM checklist_state WHERE workspace_id IS ? AND template=?",
+            (workspace_id, template),
+        )
+        return {r["item_id"]: {"checked": bool(r["checked"]), "note": r["note"]} for r in rows}
+
+    # -------------------------------------------------------- credentials
+    def add_credential(self, record: dict) -> int:
+        cur = self.execute(
+            "INSERT INTO credentials(workspace_id, host, service, username, secret, note, created) "
+            "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            (record.get("workspace_id"), record.get("host", ""), record.get("service", ""),
+             record.get("username", ""), record.get("secret", ""), record.get("note", ""), utcnow()),
+        )
+        return int(cur.lastrowid)
+
+    def credentials(self, workspace_id: int | None) -> list[dict]:
+        return self.query("SELECT * FROM credentials WHERE workspace_id IS ? ORDER BY id DESC", (workspace_id,))
+
+    def delete_credential(self, cred_id: int) -> None:
+        self.execute("DELETE FROM credentials WHERE id=?", (cred_id,))

@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.4.0 — Tracking & workspaces
+
+### Added
+- **Dashboard charts** — findings-by-severity donut and a tool-status bar chart,
+  drawn natively with QPainter (no plotting libraries).
+- **Methodology Checklist** — OWASP WSTG and PTES checklists tracked per
+  workspace with a live progress bar and per-item state.
+- **Credentials Manager** — discovered credentials stored per workspace with the
+  secret encrypted at rest (reveal/hide, double-click to copy).
+- **Global search** — the Ctrl+K palette now also finds findings, notes and hosts.
+- **Workspaces page** — create / switch / delete engagements from the UI (this
+  UI was previously missing), plus **export/import** a whole workspace as a
+  portable `.kfw` zip backup (encrypted secrets travel in encrypted form).
+
+### Engineering
+- New DB tables (`checklist_state`, `credentials`); vault gains value
+  encrypt/decrypt. 7 new tests (77 total); UI smoke covers all 25 pages.
+
 ## 1.3.0 — Utilities & analysis
 
 ### Added
