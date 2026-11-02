@@ -11,11 +11,14 @@ from pathlib import Path
 from core.ai_assistant import AIAssistant
 from core.audit import AuditLog
 from core.config import Settings
+from core.installer import InstallManager
 from core.intel import IntelService
+from core.lab_env import LabManager
 from core.permission_manager import PermissionManager
 from core.plugins import PluginManager
 from core.scope_manager import ScopeManager
 from core.system_monitor import SystemMonitor
+from core.tool_health import ToolHealth
 from core.tool_manager import ToolManager
 from core.workflow_engine import WorkflowEngine
 from core.workspace import WorkspaceManager
@@ -49,6 +52,11 @@ class AppManager:
         self.ai = AIAssistant(self.settings, self.catalog)
         self.intel = IntelService(self.settings, self.db)
 
+        # advanced (phase 3-5) services
+        self.health = ToolHealth(self.tools)
+        self.installer = InstallManager(self.catalog, self.tools)
+        self.labs_env = LabManager(self.audit)
+
     # ------------------------------------------------------------- workspace
     def switch_workspace(self, workspace_id: int) -> dict | None:
         workspace = self.workspaces.set_active(workspace_id)
@@ -59,6 +67,11 @@ class AppManager:
     def active_workspace_id(self) -> int | None:
         active = self.workspaces.active()
         return active["id"] if active else None
+
+    def attack_surface(self):
+        """A fresh AttackSurface bound to the active workspace."""
+        from core.attack_surface import AttackSurface
+        return AttackSurface(self.db, self.active_workspace_id())
 
     # --------------------------------------------------------------- startup
     def startup_detect(self) -> dict:

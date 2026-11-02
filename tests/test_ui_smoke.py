@@ -29,12 +29,13 @@ def test_mainwindow_builds_and_navigates(qapp, app):
 
     keys = ["dashboard", "arsenal", "cat:recon", "cat:web", "cat:recon2",
             "vulnerability", "terminal", "workflows", "assistant", "scope",
-            "monitor", "vault", "evidence", "plugins", "reports", "settings"]
+            "monitor", "vault", "evidence", "plugins", "reports", "settings",
+            "attack_surface", "tool_health", "installer", "learning", "lab_env"]
     for key in keys:
         window.navigate(key)
         qapp.processEvents(QEventLoop.AllEvents, 20)
 
-    assert window.stack.count() == 13
+    assert window.stack.count() == 18
     # the arsenal shows the full catalog with no filter
     window.navigate("arsenal")
     window.arsenal.set_category("all")

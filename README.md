@@ -45,6 +45,14 @@ one dark, modern dashboard, with authorisation guard-rails built into its core.
 - **Plugins & Custom Tools** — extend the arsenal with declarative plugins or import your own scripts.
 - **Workspaces** — isolate each engagement (scope, findings, evidence, output, reports).
 
+### Advanced (Phase 3–5)
+
+- **Attack Surface Mapper** — a visual asset graph (domains → subdomains → hosts → ports) seeded from scope, findings or pasted tool output.
+- **Tool Health Monitor** — version + runtime-dependency health for every installed tool.
+- **Installation Manager** — select missing tools and generate a safe bulk `apt` install plan / script (never auto-installs).
+- **Learning & Practice Mode** — per-tool beginner→advanced lessons and a live command explainer that breaks any command into explained parts.
+- **One-Click Lab Environment** — start/stop Docker-based vulnerable targets (OWASP Juice Shop, DVWA, WebGoat, bWAPP, VAmPI, Mutillidae) for authorised practice, and add them to scope.
+
 ## Install
 
 ### From source
@@ -93,8 +101,9 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and
 QT_QPA_PLATFORM=offscreen python3 -m pytest
 ```
 
-40 headless tests cover the catalog, scope/permission engine, command builder,
-database, reporting, managers and a full UI smoke test.
+52 headless tests cover the catalog, scope/permission engine, command builder,
+database, reporting, managers, the advanced Phase 3–5 modules and a full UI
+smoke test.
 
 ## License
 

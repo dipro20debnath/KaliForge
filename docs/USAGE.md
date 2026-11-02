@@ -79,6 +79,25 @@ confirmation flow before running.
 - **Workspaces** — each engagement has its own scope, findings, evidence and reports.
 - **Plugins** — enable/disable plugins or import your own scripts as tool cards.
 
+## Advanced features (Phase 3–5)
+
+- **Attack Surface** — *Seed from scope* / *Seed from findings* to populate the
+  graph, *Add asset* for manual nodes, or *Import output* to paste nmap/recon
+  results (hosts, IPs and open ports are extracted and linked). Scroll to zoom,
+  drag to pan, *Fit* to recenter.
+- **Tool Health** — shows installed tools; *Probe versions & dependencies* checks
+  each tool's version and whether its runtime dependencies are present
+  (ok / degraded / builtin).
+- **Install Manager** — tick the missing tools you want, *Generate install plan*
+  to build a single `apt install` line + a script, then optionally run it in the
+  terminal (it still passes the confirmation flow).
+- **Learning Mode** — *Tool Lessons* gives beginner→advanced modules with runnable
+  examples; *Command Explainer* breaks any command into program / flags / target
+  with plain-language descriptions.
+- **Lab Environments** — start/stop Docker vulnerable targets with one click,
+  *Open* the running app in your browser, and *→ Scope* to authorise testing it.
+  (Requires Docker; targets are intentionally vulnerable — isolated lab only.)
+
 ## Settings
 
 - **Appearance** — three themes (Kali Neon, Cyber Cyan, SOC Pro), font size.

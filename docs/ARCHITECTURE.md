@@ -50,6 +50,11 @@ why the test-suite covers it without a display server.
 - **workspace.py** — per-engagement isolation.
 - **plugins.py** — declarative plugin discovery.
 - **audit.py** — JSONL + DB audit trail.
+- **attack_surface.py** — asset relationship graph model (seed + build).
+- **tool_health.py** — version + dependency health checks.
+- **installer.py** — bulk install-plan / script generation.
+- **learning.py** — learning modules + command explainer.
+- **lab_env.py** — Docker vulnerable-target lifecycle.
 
 ### `tools/`
 - **catalog_data_a.py / _b.py** — the 106-tool catalog data (segments 1–7 / 8–14).

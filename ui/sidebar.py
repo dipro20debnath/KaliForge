@@ -31,6 +31,13 @@ NAV = [
         ("scope", "Scope Manager"),
         ("monitor", "System Monitor"),
     ]),
+    ("ADVANCED", [
+        ("attack_surface", "Attack Surface"),
+        ("tool_health", "Tool Health"),
+        ("installer", "Install Manager"),
+        ("learning", "Learning Mode"),
+        ("lab_env", "Lab Environments"),
+    ]),
     ("MANAGE", [
         ("vault", "Vault & Notes"),
         ("evidence", "Evidence & Labs"),

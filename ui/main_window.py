@@ -9,14 +9,19 @@ from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QStackedWidget,
 from core.config import APP_NAME
 from ui.pages.ai_assistant import AssistantPage
 from ui.pages.arsenal import ArsenalPage
+from ui.pages.attack_surface import AttackSurfacePage
 from ui.pages.dashboard import DashboardPage
 from ui.pages.evidence import EvidencePage
+from ui.pages.installer import InstallerPage
+from ui.pages.lab_env import LabEnvPage
+from ui.pages.learning import LearningPage
 from ui.pages.monitor import MonitorPage
 from ui.pages.plugins import PluginsPage
 from ui.pages.reports import ReportsPage
 from ui.pages.scope import ScopePage
 from ui.pages.settings import SettingsPage
 from ui.pages.terminal_page import TerminalPage
+from ui.pages.tool_health import ToolHealthPage
 from ui.pages.vault import VaultPage
 from ui.pages.vulnerability import VulnerabilityPage
 from ui.pages.workflows import WorkflowsPage
@@ -92,6 +97,18 @@ class MainWindow(QMainWindow):
         self.settings_page = SettingsPage(self.app)
         self.settings_page.theme_changed.connect(self._apply_theme)
 
+        # advanced (phase 3-5) pages
+        self.attack_surface = AttackSurfacePage(self.app)
+        self.attack_surface.status_message.connect(self._status)
+        self.tool_health = ToolHealthPage(self.app)
+        self.tool_health.status_message.connect(self._status)
+        self.installer = InstallerPage(self.app)
+        self.installer.status_message.connect(self._status)
+        self.installer.run_in_terminal.connect(self._run_in_terminal)
+        self.learning = LearningPage(self.app)
+        self.lab_env = LabEnvPage(self.app)
+        self.lab_env.status_message.connect(self._status)
+
         for key, page in [
             ("dashboard", self.dashboard), ("arsenal", self.arsenal),
             ("terminal", self.terminal), ("vulnerability", self.vulnerability),
@@ -100,6 +117,9 @@ class MainWindow(QMainWindow):
             ("reports", self.reports), ("vault", self.vault),
             ("evidence", self.evidence), ("plugins", self.plugins),
             ("settings", self.settings_page),
+            ("attack_surface", self.attack_surface), ("tool_health", self.tool_health),
+            ("installer", self.installer), ("learning", self.learning),
+            ("lab_env", self.lab_env),
         ]:
             self._pages[key] = page
             self.stack.addWidget(page)

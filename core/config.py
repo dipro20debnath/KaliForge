@@ -19,7 +19,7 @@ from typing import Any
 
 APP_NAME = "KaliForge"
 APP_SLUG = "kaliforge"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 APP_TAGLINE = "One Interface. Every Security Workflow."
 
 BASE_DIR = Path(__file__).resolve().parent.parent
