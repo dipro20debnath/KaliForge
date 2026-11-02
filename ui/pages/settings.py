@@ -57,7 +57,8 @@ class SettingsPage(QWidget):
         self.tips_chk.setChecked(bool(self.s.get("appearance.show_beginner_tips", True)))
         self.tips_chk.toggled.connect(lambda v: self.s.set("appearance.show_beginner_tips", v))
         form.addRow(self.tips_chk)
-        note = QLabel("Theme changes apply immediately; font size applies on next launch.")
+        note = QLabel("Four themes: Kali Neon, Cyber Cyan, SOC Pro and Light. "
+                      "Theme changes apply immediately; font size applies on next launch.")
         note.setObjectName("Hint")
         form.addRow(note)
         return widget

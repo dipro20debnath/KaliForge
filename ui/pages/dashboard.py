@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QPushButton,
 
 from core.system_monitor import human_bytes
 from database.models import SEVERITIES
-from ui.theme import severity_color
+from ui.theme import palette, severity_color
 from ui.widgets.charts import BarChart, DonutChart, Legend
 from ui.widgets.common import Card, Meter, StatCard
 
@@ -158,6 +158,9 @@ class DashboardPage(QWidget):
 
     def refresh_charts(self, stats: dict) -> None:
         theme = self.app.settings.get("appearance.theme", "kali_neon")
+        pal = palette(theme)
+        self.sev_donut.set_theme(pal["panel"], pal["text"], pal["bg"])
+        self.tools_bar.set_theme(pal["bg_alt"], pal["text"], pal["text_dim"])
         counts = self.app.db.severity_counts(self.app.active_workspace_id())
         segments, legend = [], []
         for sev in SEVERITIES:

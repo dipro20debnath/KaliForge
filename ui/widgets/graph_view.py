@@ -21,7 +21,9 @@ _NODE_W = 150
 _NODE_H = 30
 _X_GAP = 90
 _Y_GAP = 12
-_EDGE_PEN = QPen(QColor("#2b4047"), 1.4)
+
+# themeable colours (updated via GraphView.set_theme)
+THEME = {"bg": "#05080a", "node_bg": "#11181a", "text": "#d6e4e6", "edge": "#2b4047"}
 
 
 class EdgeItem(QGraphicsPathItem):
@@ -29,7 +31,7 @@ class EdgeItem(QGraphicsPathItem):
         super().__init__()
         self.src = src
         self.dst = dst
-        self.setPen(_EDGE_PEN)
+        self.setPen(QPen(QColor(THEME["edge"]), 1.4))
         self.setZValue(-1)
         self.update_path()
 
@@ -47,7 +49,7 @@ class NodeItem(QGraphicsRectItem):
         super().__init__(0, 0, _NODE_W, _NODE_H)
         color = QColor(KIND_COLORS.get(kind, "#7f9499"))
         self.setPen(QPen(color, 1.6))
-        self.setBrush(QBrush(QColor("#11181a")))
+        self.setBrush(QBrush(QColor(THEME["node_bg"])))
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
@@ -59,7 +61,7 @@ class NodeItem(QGraphicsRectItem):
         dot.setPen(QPen(Qt.NoPen))
         shown = label if len(label) <= 18 else label[:17] + "…"
         text = QGraphicsSimpleTextItem(shown, self)
-        text.setBrush(QBrush(QColor("#d6e4e6")))
+        text.setBrush(QBrush(QColor(THEME["text"])))
         text.setFont(QFont("Inter", 9))
         text.setPos(22, 8)
 
@@ -76,8 +78,12 @@ class GraphView(QGraphicsView):
         self.setRenderHint(QPainter.Antialiasing)
         self.setScene(QGraphicsScene(self))
         self.setDragMode(QGraphicsView.RubberBandDrag)
-        self.setBackgroundBrush(QColor("#05080a"))
+        self.setBackgroundBrush(QColor(THEME["bg"]))
         self._scale = 1.0
+
+    def set_theme(self, bg: str, node_bg: str, text: str, edge: str) -> None:
+        THEME.update({"bg": bg, "node_bg": node_bg, "text": text, "edge": edge})
+        self.setBackgroundBrush(QColor(bg))
 
     def wheelEvent(self, event):  # noqa: N802
         factor = 1.15 if event.angleDelta().y() > 0 else 1 / 1.15
@@ -156,7 +162,7 @@ class GraphView(QGraphicsView):
         if rect.isEmpty():
             return False
         image = QImage(int(rect.width()), int(rect.height()), QImage.Format_ARGB32)
-        image.fill(QColor("#05080a"))
+        image.fill(QColor(THEME["bg"]))
         painter = QPainter(image)
         painter.setRenderHint(QPainter.Antialiasing)
         scene.render(painter, target=QRectF(image.rect()), source=rect)

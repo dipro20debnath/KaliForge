@@ -64,6 +64,10 @@ class AttackSurfacePage(QWidget):
         layout.addWidget(self.graph, 1)
 
     def refresh(self) -> None:
+        from ui.theme import palette
+        pal = palette(self.app.settings.get("appearance.theme", "kali_neon"))
+        node_bg = pal["panel_alt"] if pal.get("light") else "#11181a"
+        self.graph.set_theme(pal["bg_alt"], node_bg, pal["text"], pal["border"])
         surface = self.app.attack_surface()
         graph = surface.build()
         self.graph.set_graph(graph)

@@ -34,7 +34,21 @@ THEMES = {
         "sel": "#223250", "glow": "rgba(76, 139, 245, 0.35)",
         "crit": "#f04e6e", "high": "#f0984e", "med": "#f0d24e", "low": "#4ecf8a", "info": "#4c8bf5",
     },
+    "light": {
+        "name": "Light · Daybreak",
+        "bg": "#f4f6f8", "bg_alt": "#eaeef2", "panel": "#ffffff", "panel_alt": "#f2f5f8",
+        "panel_hi": "#eaf2ee", "border": "#d6dde5", "border_bright": "#0c9f76",
+        "text": "#16202a", "text_dim": "#4f5e6c", "text_mut": "#7c8a97",
+        "accent": "#0c9f76", "accent_2": "#0e9fae", "accent_soft": "#dcf3eb",
+        "sel": "#d2efe5", "glow": "rgba(12, 159, 118, 0.25)",
+        "crit": "#e11d48", "high": "#e07400", "med": "#b7900a", "low": "#16a34a", "info": "#2563eb",
+        "light": True,
+    },
 }
+
+
+def is_light(theme_id: str) -> bool:
+    return bool(palette(theme_id).get("light"))
 
 SEVERITY_KEYS = {"critical": "crit", "high": "high", "medium": "med", "low": "low", "info": "info"}
 

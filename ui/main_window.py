@@ -384,6 +384,17 @@ class MainWindow(QMainWindow):
     def _apply_theme(self, theme: str) -> None:
         size = int(self.app.settings.get("appearance.ui_font_size", 10))
         self.setStyleSheet(stylesheet(theme, size))
+        # repaint theme-aware custom-drawn widgets
+        if hasattr(self, "dashboard"):
+            try:
+                self.dashboard.refresh_charts(self.app.dashboard_stats())
+            except Exception:  # noqa: BLE001
+                pass
+        if hasattr(self, "attack_surface"):
+            try:
+                self.attack_surface.refresh()
+            except Exception:  # noqa: BLE001
+                pass
 
     def closeEvent(self, event):  # noqa: N802
         try:

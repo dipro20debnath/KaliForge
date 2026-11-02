@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kaliforge"
-version = "1.4.1"
+version = "1.4.2"
 description = "KaliForge — Cybersecurity Command Center: an all-in-one security toolkit, terminal and reporting dashboard for Kali Linux."
 readme = "README.md"
 license = "MIT"

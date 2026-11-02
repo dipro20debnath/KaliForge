@@ -14,7 +14,14 @@ class DonutChart(QWidget):
         super().__init__(parent)
         self._segments: list[tuple[str, float, str]] = []
         self._center_label = ""
+        self._hole = "#111a1d"
+        self._text = "#d6e4e6"
+        self._ring_gap = "#0a0e10"
         self.setMinimumHeight(180)
+
+    def set_theme(self, hole: str, text: str, ring_gap: str) -> None:
+        self._hole, self._text, self._ring_gap = hole, text, ring_gap
+        self.update()
 
     def set_data(self, segments, center_label: str = "") -> None:
         self._segments = [(l, float(v), c) for l, v, c in segments]
@@ -36,7 +43,7 @@ class DonutChart(QWidget):
         start = 90 * 16
         for _label, value, color in self._segments:
             span = -int(360 * 16 * value / total)
-            painter.setPen(QPen(QColor("#0a0e10"), 2))
+            painter.setPen(QPen(QColor(self._ring_gap), 2))
             painter.setBrush(QColor(color))
             painter.drawPie(rect, start, span)
             start += span
@@ -44,11 +51,9 @@ class DonutChart(QWidget):
         hole = side * 0.56
         hrect = QRectF((self.width() - hole) / 2, (self.height() - hole) / 2, hole, hole)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(self.palette().window())
-        bg = self.palette().color(self.backgroundRole())
-        painter.setBrush(QColor("#111a1d"))
+        painter.setBrush(QColor(self._hole))
         painter.drawEllipse(hrect)
-        painter.setPen(QColor("#d6e4e6"))
+        painter.setPen(QColor(self._text))
         f = QFont("Inter", 13)
         f.setBold(True)
         painter.setFont(f)
@@ -62,7 +67,14 @@ class BarChart(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._bars: list[tuple[str, float, str]] = []
+        self._track = "#162226"
+        self._text = "#d6e4e6"
+        self._label = "#9fb0b3"
         self.setMinimumHeight(140)
+
+    def set_theme(self, track: str, text: str, label: str) -> None:
+        self._track, self._text, self._label = track, text, label
+        self.update()
 
     def set_data(self, bars) -> None:
         self._bars = [(l, float(v), c) for l, v, c in bars]
@@ -84,17 +96,17 @@ class BarChart(QWidget):
         painter.setFont(QFont("Inter", 9))
         for i, (label, value, color) in enumerate(self._bars):
             y = pad + i * gap + (gap - bar_h) / 2
-            painter.setPen(QColor("#9fb0b3"))
+            painter.setPen(QColor(self._label))
             painter.drawText(QRectF(0, y - 2, label_w - 6, bar_h + 4),
                              Qt.AlignVCenter | Qt.AlignRight, label)
             track = QRectF(label_w, y, self.width() - label_w - 40 - pad, bar_h)
             painter.setPen(Qt.NoPen)
-            painter.setBrush(QColor("#16222600") if False else QColor("#162226"))
+            painter.setBrush(QColor(self._track))
             painter.drawRoundedRect(track, 4, 4)
             w = track.width() * (value / maxv)
             painter.setBrush(QColor(color))
             painter.drawRoundedRect(QRectF(track.x(), y, max(2.0, w), bar_h), 4, 4)
-            painter.setPen(QColor("#d6e4e6"))
+            painter.setPen(QColor(self._text))
             painter.drawText(QRectF(track.right() + 6, y - 2, 40, bar_h + 4),
                              Qt.AlignVCenter | Qt.AlignLeft, str(int(value)))
         painter.end()

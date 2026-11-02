@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.2 — Light theme
+
+### Added
+- **Light theme ("Daybreak")** — a fourth colour scheme alongside Kali Neon,
+  Cyber Cyan and SOC Pro, selectable in Settings → Appearance.
+- Custom-drawn widgets (severity donut, tool bar chart, attack-surface graph)
+  are now theme-aware and re-render on theme change, so they read correctly on
+  light backgrounds too.
+
 ## 1.4.1 — Design & motion
 
 ### Changed
