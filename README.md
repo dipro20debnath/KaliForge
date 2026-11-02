@@ -173,8 +173,10 @@ across four colour schemes (Kali Neon, Cyber Cyan, SOC Pro and a Light theme).
 
 <img src="docs/screenshots/28-light-theme.png" alt="KaliForge light theme" width="820">
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and
-[`docs/USAGE.md`](docs/USAGE.md) for a walkthrough.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design,
+[`docs/USAGE.md`](docs/USAGE.md) for a walkthrough, and
+[`docs/TESTING.md`](docs/TESTING.md) for a step-by-step real-Kali
+integration-testing guide.
 
 ## Tests
 
