@@ -3,8 +3,8 @@ keyboard input to the PTY. Repaints are coalesced on a timer so a chatty tool
 doesn't flood the UI thread."""
 from __future__ import annotations
 
-from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QFontMetricsF, QPainter
+from PySide6.QtCore import QPointF, QTimer, Qt, Signal
+from PySide6.QtGui import QColor, QFont, QFontMetricsF, QLinearGradient, QPainter
 from PySide6.QtWidgets import QWidget
 
 from core.terminal_manager import TerminalSession
@@ -39,6 +39,9 @@ class TerminalView(QWidget):
         self._char_h = max(1.0, self._metrics.height())
         self._dirty = False
         self._cursor_on = True
+        self._pad_x = 8
+        self._pad_y = 5
+        self._scrolled = False
 
         self.session.set_callbacks(on_update=self._mark_dirty, on_exit=self._on_exit)
 
@@ -53,9 +56,17 @@ class TerminalView(QWidget):
 
     # --------------------------------------------------------------- sizing
     def cols_rows(self) -> tuple[int, int]:
-        cols = max(10, int(self.width() / self._char_w))
-        rows = max(4, int(self.height() / self._char_h))
+        cols = max(10, int((self.width() - 2 * self._pad_x) / self._char_w))
+        rows = max(4, int((self.height() - 2 * self._pad_y) / self._char_h))
         return cols, rows
+
+    def wheelEvent(self, event):  # noqa: N802
+        if event.angleDelta().y() > 0:
+            self.session.scroll_up(1)
+            self._scrolled = True
+        else:
+            self.session.scroll_down(1)
+        self.update()
 
     def resizeEvent(self, event):  # noqa: N802
         cols, rows = self.cols_rows()
@@ -99,7 +110,10 @@ class TerminalView(QWidget):
 
     def paintEvent(self, event):  # noqa: N802
         painter = QPainter(self)
-        painter.fillRect(self.rect(), self._bg_default)
+        grad = QLinearGradient(QPointF(0, 0), QPointF(0, self.height()))
+        grad.setColorAt(0.0, QColor("#0a1013"))
+        grad.setColorAt(1.0, self._bg_default)
+        painter.fillRect(self.rect(), grad)
         painter.setFont(self._font)
         screen = self.session.buffer_snapshot()
         ascent = self._metrics.ascent()
@@ -114,7 +128,7 @@ class TerminalView(QWidget):
 
         for row in range(lines):
             line = buffer.get(row, {})
-            y = row * self._char_h
+            y = row * self._char_h + self._pad_y
             for col in range(columns):
                 char = line.get(col)
                 if char is None:
@@ -124,7 +138,7 @@ class TerminalView(QWidget):
                 bg = self._resolve(char.bg, self._bg_default)
                 if char.reverse:
                     fg, bg = bg, fg
-                x = col * self._char_w
+                x = col * self._char_w + self._pad_x
                 if bg != self._bg_default:
                     painter.fillRect(int(x), int(y), int(self._char_w) + 1,
                                      int(self._char_h) + 1, bg)
@@ -137,10 +151,10 @@ class TerminalView(QWidget):
                     painter.setPen(fg)
                     painter.drawText(int(x), int(y + ascent), data)
 
-        # cursor
-        if self._cursor_on and self.session.is_alive():
-            cx = cursor.x * self._char_w
-            cy = cursor.y * self._char_h
+        # cursor (only when live, i.e. not scrolled back)
+        if self._cursor_on and self.session.is_alive() and not self._scrolled:
+            cx = cursor.x * self._char_w + self._pad_x
+            cy = cursor.y * self._char_h + self._pad_y
             painter.fillRect(int(cx), int(cy), int(self._char_w),
                              int(self._char_h), QColor("#27e0a1"))
             glyph = " "
@@ -150,6 +164,16 @@ class TerminalView(QWidget):
                 pass
             painter.setPen(self._bg_default)
             painter.drawText(int(cx), int(cy + ascent), glyph)
+
+        # scrollback indicator (shown while scrolled up into history)
+        if self._scrolled:
+            tag = "  ⇡ history — scroll down or type to return  "
+            fm = self._metrics
+            tw = int(fm.horizontalAdvance(tag))
+            bx = self.width() - tw - 12
+            painter.fillRect(bx, 6, tw, int(self._char_h) + 6, QColor(10, 26, 24, 230))
+            painter.setPen(QColor("#27e0a1"))
+            painter.drawText(bx, int(6 + ascent + 3), tag)
         painter.end()
 
     # --------------------------------------------------------------- input
@@ -159,6 +183,20 @@ class TerminalView(QWidget):
         key = event.key()
         mods = event.modifiers()
         text = event.text()
+
+        # Shift+PageUp / Shift+PageDown scroll the history without sending keys
+        if mods & Qt.ShiftModifier and key in (Qt.Key_PageUp, Qt.Key_PageDown):
+            if key == Qt.Key_PageUp:
+                self.session.scroll_up(1)
+                self._scrolled = True
+            else:
+                self.session.scroll_down(1)
+            self.update()
+            return
+        # any real input returns to the live (bottom) view
+        if self._scrolled:
+            self.session.scroll_to_bottom()
+            self._scrolled = False
 
         if mods & Qt.ControlModifier and key == Qt.Key_C and self.selectedText_available():
             return  # allow copy via shortcut handler elsewhere

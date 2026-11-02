@@ -175,6 +175,31 @@ class TerminalSession:
         with self._lock:
             return self.screen.cursor.x, self.screen.cursor.y
 
+    # --------------------------------------------------------------- scrollback
+    def scroll_up(self, pages: int = 1) -> None:
+        with self._lock:
+            for _ in range(max(1, pages)):
+                try:
+                    self.screen.prev_page()
+                except Exception:
+                    break
+
+    def scroll_down(self, pages: int = 1) -> None:
+        with self._lock:
+            for _ in range(max(1, pages)):
+                try:
+                    self.screen.next_page()
+                except Exception:
+                    break
+
+    def scroll_to_bottom(self) -> None:
+        with self._lock:
+            try:
+                for _ in range(200):
+                    self.screen.next_page()
+            except Exception:
+                pass
+
     def buffer_snapshot(self):
         """Return (history_lines, screen) under lock for the renderer."""
         with self._lock:
