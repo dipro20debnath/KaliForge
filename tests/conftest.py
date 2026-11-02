@@ -13,6 +13,31 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+@pytest.fixture(autouse=True)
+def _isolate_keyring():
+    """Force the secret vault onto its isolated encrypted-file backend during
+    tests. Without this, a machine with a working system keyring (e.g. GNOME
+    Secret Service on Kali) stores test keys in the *real* keyring, which is not
+    isolated by KALIFORGE_HOME — polluting the user's keyring and leaking state
+    between tests. We install keyring's fail backend so `SecretVault` falls back
+    to the per-test encrypted file under KALIFORGE_HOME."""
+    try:
+        import keyring
+        from keyring.backends import fail
+        previous = keyring.get_keyring()
+        keyring.set_keyring(fail.Keyring())
+    except Exception:  # keyring not installed — nothing to isolate
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            keyring.set_keyring(previous)
+        except Exception:
+            pass
+
+
 @pytest.fixture()
 def kf_home(tmp_path, monkeypatch):
     home = tmp_path / "kfhome"

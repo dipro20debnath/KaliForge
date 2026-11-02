@@ -27,6 +27,7 @@ def test_secret_vault_no_plaintext_on_disk(kf_home):
         from core.config import config_dir
         blob = (config_dir() / "secrets.enc").read_bytes()
         assert b"sk-ant-PLAINTEXT-CHECK" not in blob
+    vault.delete("anthropic_api_key")
 
 
 def test_api_key_migrates_to_vault(app):
