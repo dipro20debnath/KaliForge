@@ -82,11 +82,37 @@ class LabEnvPage(QWidget):
 
     def _start(self, lab) -> None:
         if not self.app.labs_env.docker_available():
-            QMessageBox.warning(self, "Docker", "Docker is not installed.")
+            QMessageBox.warning(
+                self, "Docker",
+                "Docker is not installed.\n\nInstall it with:\n"
+                "  sudo apt install -y docker.io\n  sudo systemctl start docker\n"
+                "  sudo usermod -aG docker $USER   (then log out and back in)")
             return
-        self.status_message.emit(f"Starting {lab.name} …")
-        self.app.labs_env.start(lab, on_done=lambda r: QTimer.singleShot(0, self.refresh))
-        QTimer.singleShot(2500, self.refresh)
+        if not self.app.labs_env.docker_running():
+            QMessageBox.warning(
+                self, "Docker",
+                "The Docker daemon isn't reachable. Either it isn't running, or "
+                "your user lacks access to it.\n\nTry:\n"
+                "  sudo systemctl start docker\n"
+                "  sudo usermod -aG docker $USER   (then log out and back in)\n\n"
+                "Check in a terminal with:  docker ps")
+            return
+        self.status_message.emit(
+            f"Starting {lab.name}… the first run pulls the image and can take a minute.")
+        self.app.labs_env.start(lab, on_done=self._on_start_done)
+        QTimer.singleShot(4000, self.refresh)
+
+    def _on_start_done(self, result) -> None:
+        def show():
+            self.refresh()
+            if result.ok:
+                self.status_message.emit("Lab started.")
+            else:
+                tail = "\n".join(result.output.splitlines()[-6:]) or result.error
+                self.status_message.emit("Lab failed to start — see details.")
+                QMessageBox.critical(self, "Lab failed to start",
+                                     f"`{result.command}` exited with code {result.returncode}.\n\n{tail}")
+        QTimer.singleShot(0, show)
 
     def _stop(self, lab) -> None:
         self.status_message.emit(f"Stopping {lab.name} …")
