@@ -1,0 +1,18 @@
+[
+  {
+    "id": "example-ping",
+    "name": "Ping Sweep (plugin)",
+    "category": "network",
+    "desc": "Simple ICMP reachability check contributed by the example plugin.",
+    "binary": "ping",
+    "package": "iputils-ping",
+    "homepage": "",
+    "docs": "",
+    "lab_only": false,
+    "risk": "info",
+    "tags": ["ping", "icmp", "plugin", "reachability"],
+    "commands": [
+      {"label": "Ping host (4 packets)", "template": "ping -c 4 {target}", "scope": true}
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "name": "Network Audit",
+  "id": "network_audit",
+  "description": "Host discovery and layered port/service scanning across a network range.",
+  "inputs": ["cidr", "target"],
+  "steps": [
+    {"tool": "nmap", "template": "nmap -sn {cidr}", "optional": true},
+    {"tool": "nmap", "template": "nmap -T4 -F {target}"},
+    {"tool": "nmap", "template": "nmap -sV -sC -p- -T4 {target}"}
+  ]
+}

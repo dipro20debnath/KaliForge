@@ -1,0 +1,13 @@
+{
+  "name": "Web Application Audit",
+  "id": "web_audit",
+  "description": "Fingerprint, enumerate content and run template + server scans against a web target.",
+  "inputs": ["url", "wordlist"],
+  "steps": [
+    {"tool": "httpx", "template": "httpx -u {url} -title -status-code -tech-detect", "optional": true},
+    {"tool": "whatweb", "template": "whatweb -a 3 {url}", "optional": true},
+    {"tool": "nikto", "template": "nikto -h {url}", "optional": true},
+    {"tool": "gobuster", "template": "gobuster dir -u {url} -w {wordlist} -q", "optional": true},
+    {"tool": "nuclei", "template": "nuclei -u {url} -silent", "optional": true}
+  ]
+}

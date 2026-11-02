@@ -1,0 +1,8 @@
+{
+  "id": "example-extras",
+  "name": "Example Extras",
+  "version": "1.0.0",
+  "author": "KaliForge",
+  "description": "Sample plugin showing how to add custom tool cards to the arsenal.",
+  "tools": "tools.json"
+}

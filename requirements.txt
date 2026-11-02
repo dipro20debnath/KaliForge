@@ -1,0 +1,8 @@
+# KaliForge runtime dependencies
+PySide6>=6.6
+psutil>=5.9
+pyte>=0.8.1
+reportlab>=4.0
+
+# Development / testing (optional)
+# pytest>=7.4

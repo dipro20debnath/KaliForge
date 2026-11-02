@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# KaliForge runtime data (should never be committed)
+*.db
+*.db-wal
+*.db-shm
+logs/*.jsonl
+reports/*.pdf
+reports/*.html
+workspaces/
+
+# Packaging artefacts
+packaging/deb/build/
+*.deb
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

@@ -1,0 +1,13 @@
+{
+  "name": "Reconnaissance",
+  "id": "recon",
+  "description": "Passive + active discovery: domain intel, DNS, subdomains and a service scan.",
+  "inputs": ["domain", "target"],
+  "steps": [
+    {"tool": "whois", "template": "whois {domain}", "optional": true},
+    {"tool": "dig", "template": "dig {domain} ANY", "optional": true},
+    {"tool": "subfinder", "template": "subfinder -d {domain} -silent", "optional": true},
+    {"tool": "whatweb", "template": "whatweb {domain}", "optional": true},
+    {"tool": "nmap", "template": "nmap -sV -sC {target}"}
+  ]
+}

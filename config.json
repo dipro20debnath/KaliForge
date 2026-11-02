@@ -1,0 +1,60 @@
+{
+  "appearance": {
+    "theme": "kali_neon",
+    "ui_font_size": 10,
+    "show_beginner_tips": true
+  },
+  "terminal": {
+    "default_profile": "Default",
+    "scrollback": 10000,
+    "record_sessions": false,
+    "confirm_close_running": true,
+    "restore_last_session": false,
+    "profiles": [
+      {"name": "Default", "shell": "", "font_family": "DejaVu Sans Mono", "font_size": 11, "scheme": "theme"},
+      {"name": "Large Print", "shell": "", "font_family": "DejaVu Sans Mono", "font_size": 14, "scheme": "theme"},
+      {"name": "Bash Classic", "shell": "/bin/bash", "font_family": "Monospace", "font_size": 11, "scheme": "classic"}
+    ]
+  },
+  "security": {
+    "scope_mode": "warn",
+    "require_scope_for_lab_only": true,
+    "confirm_destructive": true,
+    "confirm_sudo": true,
+    "allow_root_launch": false,
+    "audit_logging": true
+  },
+  "ai": {
+    "provider": "offline",
+    "model": "claude-opus-5-5",
+    "effort": "low",
+    "max_tokens": 4000,
+    "send_scope_context": true
+  },
+  "intel": {
+    "nvd_base": "https://services.nvd.nist.gov/rest/json/cves/2.0",
+    "epss_base": "https://api.first.org/data/v1/epss",
+    "kev_url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    "cache_hours": 24,
+    "feeds": [
+      {"name": "CISA Cybersecurity Advisories", "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml"},
+      {"name": "Exploit-DB", "url": "https://www.exploit-db.com/rss.xml"},
+      {"name": "Kali Linux Blog", "url": "https://www.kali.org/rss.xml"},
+      {"name": "The Hacker News", "url": "https://feeds.feedburner.com/TheHackersNews"}
+    ]
+  },
+  "workspace": {
+    "root": "",
+    "active": "Default"
+  },
+  "tools": {
+    "detect_on_startup": true,
+    "check_updates_on_startup": true
+  },
+  "plugins": {
+    "enabled": []
+  },
+  "monitor": {
+    "interval_ms": 1000
+  }
+}

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=KaliForge
+GenericName=Cybersecurity Command Center
+Comment=All-in-one security toolkit, terminal and reporting dashboard
+Exec=kaliforge
+Icon=kaliforge
+Terminal=false
+Categories=Security;System;Network;Utility;
+Keywords=security;pentest;kali;recon;forensics;
+StartupNotify=true
