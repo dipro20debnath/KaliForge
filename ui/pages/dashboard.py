@@ -28,7 +28,21 @@ class DashboardPage(QWidget):
         self._build()
         self._timer = QTimer(self)
         self._timer.setInterval(int(self.app.settings.get("monitor.interval_ms", 1000)))
-        self._timer.timeout.connect(self.refresh_monitor)
+        self._timer.timeout.connect(self._tick)
+        self._tick_count = 0
+
+    def _tick(self) -> None:
+        # live meters every tick; a full stats/tool re-scan every ~5s so a tool
+        # installed while the dashboard is open shows up without navigating away
+        self.refresh_monitor()
+        self._tick_count += 1
+        if self._tick_count % 5 == 0:
+            self.app.tools.detect_all()
+            stats = self.app.dashboard_stats()
+            for key, card in self.cards.items():
+                card.set_value(stats.get(key, "—"))
+            self.refresh_charts(stats)
+            self.refresh_activity()
 
     def _build(self) -> None:
         outer = QVBoxLayout(self)
@@ -53,6 +67,11 @@ class DashboardPage(QWidget):
         title_box.addWidget(sub)
         head.addLayout(title_box)
         head.addStretch(1)
+        refresh_btn = QPushButton("⟳ Refresh")
+        refresh_btn.setObjectName("Ghost")
+        refresh_btn.setToolTip("Re-scan tools and refresh stats now")
+        refresh_btn.clicked.connect(self.refresh)
+        head.addWidget(refresh_btn)
         layout.addLayout(head)
 
         # stat cards
