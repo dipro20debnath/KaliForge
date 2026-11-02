@@ -11,6 +11,8 @@ launcher. KaliForge centralises 100+ security tools, an integrated terminal,
 reconnaissance, vulnerability assessment, reporting and workflow automation into
 one dark, modern dashboard, with authorisation guard-rails built into its core.
 
+<img src="docs/screenshots/01-dashboard.png" alt="KaliForge Dashboard" width="880">
+
 </div>
 
 ---
@@ -52,6 +54,47 @@ one dark, modern dashboard, with authorisation guard-rails built into its core.
 - **Installation Manager** — select missing tools and generate a safe bulk `apt` install plan / script (never auto-installs).
 - **Learning & Practice Mode** — per-tool beginner→advanced lessons and a live command explainer that breaks any command into explained parts.
 - **One-Click Lab Environment** — start/stop Docker-based vulnerable targets (OWASP Juice Shop, DVWA, WebGoat, bWAPP, VAmPI, Mutillidae) for authorised practice, and add them to scope.
+
+## 📸 Screenshots
+
+### Core
+
+| Tool Arsenal | Command Center (PTY terminal) |
+|---|---|
+| ![Arsenal](docs/screenshots/02-arsenal.png) | ![Terminal](docs/screenshots/03-command-center.png) |
+| **Tool details & command templates** | **AI Command Assistant** |
+| ![Tool detail](docs/screenshots/04-tool-detail.png) | ![AI assistant](docs/screenshots/08-ai-assistant.png) |
+
+### Assessment & reporting
+
+| Vulnerability Assessment | Attack Surface Mapper |
+|---|---|
+| ![Vulnerability](docs/screenshots/05-vulnerability.png) | ![Attack surface](docs/screenshots/06-attack-surface.png) |
+| **Workflows** | **Reports** |
+| ![Workflows](docs/screenshots/07-workflows.png) | ![Reports](docs/screenshots/18-reports.png) |
+| **Scope Manager** | **System Monitor** |
+| ![Scope](docs/screenshots/09-scope.png) | ![Monitor](docs/screenshots/10-monitor.png) |
+
+### Advanced (Phase 3–5)
+
+| Tool Health Monitor | Installation Manager |
+|---|---|
+| ![Tool health](docs/screenshots/11-tool-health.png) | ![Installer](docs/screenshots/12-installer.png) |
+| **Learning & Practice Mode** | **One-Click Lab Environments** |
+| ![Learning](docs/screenshots/13-learning.png) | ![Lab env](docs/screenshots/14-lab-env.png) |
+
+### Manage & navigate
+
+| Command Vault & Notes | Evidence & Lab Manager |
+|---|---|
+| ![Vault](docs/screenshots/15-vault.png) | ![Evidence](docs/screenshots/16-evidence.png) |
+| **Plugins & Custom Tools** | **Settings** |
+| ![Plugins](docs/screenshots/17-plugins.png) | ![Settings](docs/screenshots/19-settings.png) |
+| **Command Palette (Ctrl+K)** | |
+| ![Command palette](docs/screenshots/20-command-palette.png) | |
+
+> Screenshots rendered from the running app (Kali Neon theme) with sample
+> engagement data.
 
 ## Install
 
