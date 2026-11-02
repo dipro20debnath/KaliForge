@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.3.0 — Utilities & analysis
+
+### Added
+- **Crypto Toolkit** — offline encoder/decoder (Base64/32, Hex, URL, ROT13,
+  HTML, Binary, ASCII85), hash identifier (MD5/NTLM/SHA/bcrypt/argon2/…) and a
+  text hasher. No network, no external tools.
+- **Payload Generator** — reverse/bind shell one-liners (bash, nc, Python, PHP,
+  Perl, Ruby, PowerShell, socat, Java, awk) with matching listeners and
+  URL-encode / Base64 / PowerShell `-enc` helpers.
+- **Scan Import** — parsers for nmap (XML & normal), nuclei JSON and gobuster
+  that turn tool output into findings **and** attack-surface assets in one step.
+- **Hosts** — a host-centric view aggregating each host's open ports/services
+  and findings, with add-to-scope.
+- New sidebar **UTILITIES** section; Hosts added under **ADVANCED**.
+
+### Engineering
+- 12 new tests (71 total); UI smoke test covers all 22 pages.
+
 ## 1.2.0 — Hardening & polish
 
 ### Added

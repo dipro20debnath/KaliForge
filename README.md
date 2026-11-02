@@ -55,6 +55,13 @@ one dark, modern dashboard, with authorisation guard-rails built into its core.
 - **Learning & Practice Mode** — per-tool beginner→advanced lessons and a live command explainer that breaks any command into explained parts.
 - **One-Click Lab Environment** — start/stop Docker-based vulnerable targets (OWASP Juice Shop, DVWA, WebGoat, bWAPP, VAmPI, Mutillidae) for authorised practice, and add them to scope.
 
+### Utilities & analysis
+
+- **Crypto Toolkit** — an offline mini-CyberChef: encode/decode Base64/32, Hex, URL, ROT13, HTML, Binary, ASCII85; identify hash types (MD5/NTLM/SHA/bcrypt/…) and hash text. No network, no external tools.
+- **Payload Generator** — reverse/bind shell one-liners (bash, nc, Python, PHP, Perl, Ruby, PowerShell, socat, …) with matching listeners, plus URL-encode / Base64 / PowerShell `-enc` variants.
+- **Scan Import** — parse nmap (XML & normal), nuclei JSON and gobuster output into **findings + attack-surface assets** automatically.
+- **Hosts** — a host-centric view aggregating every host's open ports/services and findings in one place.
+
 ## 📸 Screenshots
 
 ### Core
@@ -92,6 +99,14 @@ one dark, modern dashboard, with authorisation guard-rails built into its core.
 | ![Plugins](docs/screenshots/17-plugins.png) | ![Settings](docs/screenshots/19-settings.png) |
 | **Command Palette (Ctrl+K)** | |
 | ![Command palette](docs/screenshots/20-command-palette.png) | |
+
+### Utilities & analysis
+
+| Crypto Toolkit (offline) | Payload Generator |
+|---|---|
+| ![Crypto toolkit](docs/screenshots/21-crypto-toolkit.png) | ![Payloads](docs/screenshots/22-payloads.png) |
+| **Scan Import (nmap / nuclei / gobuster)** | **Hosts (aggregated view)** |
+| ![Scan import](docs/screenshots/23-scan-import.png) | ![Hosts](docs/screenshots/24-hosts.png) |
 
 > Screenshots rendered from the running app (Kali Neon theme) with sample
 > engagement data.

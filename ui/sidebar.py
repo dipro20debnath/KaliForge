@@ -33,10 +33,16 @@ NAV = [
     ]),
     ("ADVANCED", [
         ("attack_surface", "Attack Surface"),
+        ("hosts", "Hosts"),
         ("tool_health", "Tool Health"),
         ("installer", "Install Manager"),
         ("learning", "Learning Mode"),
         ("lab_env", "Lab Environments"),
+    ]),
+    ("UTILITIES", [
+        ("toolkit", "Crypto Toolkit"),
+        ("payloads", "Payloads"),
+        ("importer", "Scan Import"),
     ]),
     ("MANAGE", [
         ("vault", "Vault & Notes"),

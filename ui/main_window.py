@@ -13,16 +13,20 @@ from ui.pages.arsenal import ArsenalPage
 from ui.pages.attack_surface import AttackSurfacePage
 from ui.pages.dashboard import DashboardPage
 from ui.pages.evidence import EvidencePage
+from ui.pages.hosts import HostsPage
+from ui.pages.importer import ImporterPage
 from ui.pages.installer import InstallerPage
 from ui.pages.lab_env import LabEnvPage
 from ui.pages.learning import LearningPage
 from ui.pages.monitor import MonitorPage
+from ui.pages.payloads import PayloadsPage
 from ui.pages.plugins import PluginsPage
 from ui.pages.reports import ReportsPage
 from ui.pages.scope import ScopePage
 from ui.pages.settings import SettingsPage
 from ui.pages.terminal_page import TerminalPage
 from ui.pages.tool_health import ToolHealthPage
+from ui.pages.toolkit import ToolkitPage
 from ui.pages.vault import VaultPage
 from ui.pages.vulnerability import VulnerabilityPage
 from ui.pages.workflows import WorkflowsPage
@@ -145,6 +149,18 @@ class MainWindow(QMainWindow):
         self.lab_env = LabEnvPage(self.app)
         self.lab_env.status_message.connect(self._status)
 
+        # feature set: hosts, toolkit, payloads, scan import
+        self.hosts = HostsPage(self.app)
+        self.hosts.status_message.connect(self._status)
+        self.hosts.add_to_scope.connect(self._add_host_to_scope)
+        self.toolkit = ToolkitPage(self.app)
+        self.payloads = PayloadsPage(self.app)
+        self.payloads.status_message.connect(self._status)
+        self.payloads.run_in_terminal.connect(self._run_in_terminal)
+        self.importer = ImporterPage(self.app)
+        self.importer.status_message.connect(self._status)
+        self.importer.data_imported.connect(self._on_imported)
+
         for key, page in [
             ("dashboard", self.dashboard), ("arsenal", self.arsenal),
             ("terminal", self.terminal), ("vulnerability", self.vulnerability),
@@ -155,7 +171,9 @@ class MainWindow(QMainWindow):
             ("settings", self.settings_page),
             ("attack_surface", self.attack_surface), ("tool_health", self.tool_health),
             ("installer", self.installer), ("learning", self.learning),
-            ("lab_env", self.lab_env),
+            ("lab_env", self.lab_env), ("hosts", self.hosts),
+            ("toolkit", self.toolkit), ("payloads", self.payloads),
+            ("importer", self.importer),
         ]:
             self._pages[key] = page
             self.stack.addWidget(page)
@@ -178,6 +196,19 @@ class MainWindow(QMainWindow):
                 self.vulnerability.refresh()
             elif key == "dashboard":
                 self.dashboard.refresh()
+            elif key == "hosts":
+                self.hosts.refresh()
+
+    def _add_host_to_scope(self, host: str) -> None:
+        if host:
+            self.app.scope.add(host)
+            self._status(f"Added {host} to scope.")
+
+    def _on_imported(self) -> None:
+        self.vulnerability.refresh()
+        self.hosts.refresh()
+        self.attack_surface.refresh()
+        self._status("Scan data imported into findings, hosts and attack surface.")
 
     # ------------------------------------------------------------- tool launch
     def _open_tool(self, tool_id: str) -> None:

@@ -98,6 +98,20 @@ confirmation flow before running.
   *Open* the running app in your browser, and *→ Scope* to authorise testing it.
   (Requires Docker; targets are intentionally vulnerable — isolated lab only.)
 
+## Utilities & analysis
+
+- **Crypto Toolkit** — *Encoder/Decoder* for Base64/32, Hex, URL, ROT13, HTML,
+  Binary and ASCII85 (Encode/Decode/swap); *Hash Identifier* names likely hash
+  types with hashcat modes and hashes any text (MD5/SHA/CRC32).
+- **Payloads** — set LHOST/LPORT, pick a shell type → get the reverse-shell
+  one-liner and a matching listener. Copy, URL-encode, Base64 or build a
+  PowerShell `-enc` variant; start the listener in the terminal.
+- **Scan Import** — paste or load nmap (XML/normal), nuclei JSON or gobuster
+  output, *Parse* to preview, then *Import to workspace* — it creates findings
+  **and** attack-surface assets, and populates the Hosts view.
+- **Hosts** — pick a host to see all its open ports/services and findings in one
+  place; add it to scope from there.
+
 ## Settings
 
 - **Appearance** — three themes (Kali Neon, Cyber Cyan, SOC Pro), font size.
