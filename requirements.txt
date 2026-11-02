@@ -4,5 +4,9 @@ psutil>=5.9
 pyte>=0.8.1
 reportlab>=4.0
 
+# Encrypted API-key vault (recommended; app degrades gracefully without them)
+cryptography>=41
+keyring>=24
+
 # Development / testing (optional)
 # pytest>=7.4

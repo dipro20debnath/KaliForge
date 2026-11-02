@@ -1,0 +1,11 @@
+{
+  "name": "Wireless Survey",
+  "id": "wireless_survey",
+  "description": "Passive wireless survey on your own authorised interface. Enables monitor mode and lists nearby networks. Test only networks you own or are authorised to assess.",
+  "inputs": ["interface"],
+  "steps": [
+    {"tool": "airmon-ng", "template": "airmon-ng check kill", "optional": true},
+    {"tool": "airmon-ng", "template": "airmon-ng start {interface}", "optional": true},
+    {"tool": "airodump-ng", "template": "timeout 30 airodump-ng {interface}mon", "optional": true}
+  ]
+}

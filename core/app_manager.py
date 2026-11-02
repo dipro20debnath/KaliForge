@@ -17,6 +17,7 @@ from core.lab_env import LabManager
 from core.permission_manager import PermissionManager
 from core.plugins import PluginManager
 from core.scope_manager import ScopeManager
+from core.secrets import SecretVault
 from core.system_monitor import SystemMonitor
 from core.tool_health import ToolHealth
 from core.tool_manager import ToolManager
@@ -49,7 +50,9 @@ class AppManager:
             enforce_scope=self.settings.get("security.scope_mode", "warn") != "off",
         )
         self.monitor = SystemMonitor()
-        self.ai = AIAssistant(self.settings, self.catalog)
+        self.vault = SecretVault()
+        self.ai = AIAssistant(self.settings, self.catalog, vault=self.vault)
+        self._migrate_api_key()
         self.intel = IntelService(self.settings, self.db)
 
         # advanced (phase 3-5) services
@@ -67,6 +70,15 @@ class AppManager:
     def active_workspace_id(self) -> int | None:
         active = self.workspaces.active()
         return active["id"] if active else None
+
+    def _migrate_api_key(self) -> None:
+        """Move any plaintext key left in settings.json into the vault."""
+        if not self.vault.available:
+            return
+        legacy = self.settings.get("ai.api_key", "")
+        if legacy and not self.vault.has(AIAssistant.KEY_NAME):
+            self.vault.set(AIAssistant.KEY_NAME, legacy)
+            self.settings.set("ai.api_key", "")
 
     def attack_surface(self):
         """A fresh AttackSurface bound to the active workspace."""

@@ -3,6 +3,7 @@ cross-page signals (run a command → terminal, open details, etc.)."""
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QStackedWidget,
                                QStatusBar, QWidget)
 
@@ -26,8 +27,9 @@ from ui.pages.vault import VaultPage
 from ui.pages.vulnerability import VulnerabilityPage
 from ui.pages.workflows import WorkflowsPage
 from ui.run_controller import RunController
-from ui.sidebar import Sidebar
+from ui.sidebar import NAV, Sidebar
 from ui.theme import stylesheet
+from ui.widgets.command_palette import CommandPalette, PaletteEntry
 from ui.widgets.tool_detail import ToolDetailDialog
 
 
@@ -57,9 +59,43 @@ class MainWindow(QMainWindow):
 
         self.setStatusBar(QStatusBar())
         self._apply_theme(self.app.settings.get("appearance.theme", "kali_neon"))
+        self._install_shortcuts()
 
         self.sidebar.select("dashboard")
         self.navigate("dashboard")
+
+    # ------------------------------------------------------------- shortcuts
+    def _install_shortcuts(self) -> None:
+        shortcuts = {
+            "Ctrl+K": self.open_palette,
+            "Ctrl+P": self.open_palette,
+            "Ctrl+T": lambda: self.navigate("terminal"),
+            "Ctrl+D": lambda: self.navigate("dashboard"),
+            "Ctrl+L": lambda: self.navigate("arsenal"),
+            "Ctrl+R": lambda: self.navigate("reports"),
+            "Ctrl+Shift+S": lambda: self.navigate("scope"),
+        }
+        for seq, slot in shortcuts.items():
+            QShortcut(QKeySequence(seq), self, activated=slot)
+
+    def open_palette(self) -> None:
+        entries: list[PaletteEntry] = []
+        for section, items in NAV:
+            for key, text in items:
+                entries.append(PaletteEntry(
+                    label=text, hint=f"go to · {section.lower()}",
+                    action=lambda k=key: self.navigate(k), keywords=section))
+        for tool in self.app.catalog.all():
+            entries.append(PaletteEntry(
+                label=tool["name"], hint="open tool · " + tool["category"],
+                action=lambda tid=tool["id"]: self._show_details(tid),
+                keywords=" ".join(tool.get("tags", []))))
+        for v in self.app.db.vault():
+            entries.append(PaletteEntry(
+                label=v["title"], hint="run · vault",
+                action=lambda c=v["command"]: self._run_from_signal(c, ""),
+                keywords=v.get("tags", "")))
+        CommandPalette(entries, self).exec()
 
     # ------------------------------------------------------------- pages
     def _build_pages(self) -> None:

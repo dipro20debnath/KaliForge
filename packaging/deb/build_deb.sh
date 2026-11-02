@@ -21,6 +21,9 @@ mkdir -p "${PKG}/DEBIAN" \
          "${PKG}/usr/bin" \
          "${PKG}/usr/share/applications" \
          "${PKG}/usr/share/icons/hicolor/scalable/apps"
+for size in 16 32 48 64 128 256; do
+    mkdir -p "${PKG}/usr/share/icons/hicolor/${size}x${size}/apps"
+done
 
 echo ">> Copying application files"
 cd "${REPO_ROOT}"
@@ -37,6 +40,12 @@ EOF
 chmod 755 "${PKG}/usr/bin/kaliforge"
 cp packaging/kaliforge.desktop "${PKG}/usr/share/applications/kaliforge.desktop"
 cp assets/kaliforge.svg "${PKG}/usr/share/icons/hicolor/scalable/apps/kaliforge.svg"
+for size in 16 32 48 64 128 256; do
+    if [ -f "assets/icons/${size}x${size}/kaliforge.png" ]; then
+        cp "assets/icons/${size}x${size}/kaliforge.png" \
+           "${PKG}/usr/share/icons/hicolor/${size}x${size}/apps/kaliforge.png"
+    fi
+done
 
 INSTALLED_SIZE=$(du -sk "${PKG}" | cut -f1)
 

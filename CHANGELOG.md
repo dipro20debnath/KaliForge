@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.2.0 — Hardening & polish
+
+### Added
+- **Encrypted API-key vault** — keys now live in the system keyring, or an
+  AES-encrypted file (`cryptography` Fernet, `0600`) instead of `settings.json`;
+  legacy plaintext keys are migrated automatically.
+- **Terminal session save/restore + recording** — record terminals to session
+  logs, save/restore the tab layout, and an optional restore-on-launch setting.
+- **Report evidence embedding** — workspace screenshots/evidence are embedded in
+  HTML (base64) and PDF reports, listed with SHA-256 in Markdown/JSON (toggle).
+- **Three more workflows** — Password Audit, Wireless Survey, Forensics Triage
+  (6 total).
+- **Attack Surface graph** — draggable nodes with live edge updates and PNG export.
+- **Command palette (Ctrl+K / Ctrl+P)** — fuzzy jump across pages, tools and
+  saved vault commands, plus global shortcuts (Ctrl+T/D/L/R, Ctrl+Shift+S).
+- **CI + packaging** — GitHub Actions (headless pytest on 3.11/3.12 + wheel
+  build) and a `pyproject.toml` with a `kaliforge` console entry point.
+- **Hicolor PNG icons** (16–256px) rasterised from the SVG, installed by the
+  Debian package.
+
+### Engineering
+- 7 new tests (59 total).
+
 ## 1.1.0 — Advanced features (Phase 3–5)
 
 ### Added

@@ -41,6 +41,7 @@ class AttackSurfacePage(QWidget):
             ("＋ Add asset", self._add_asset, "Primary"),
             ("Import output", self._import_output, "Ghost"),
             ("Fit", self._fit, "Ghost"),
+            ("⇩ PNG", self._export_png, "Ghost"),
             ("Clear", self._clear, "Danger"),
         ]:
             btn = QPushButton(text)
@@ -105,6 +106,17 @@ class AttackSurfacePage(QWidget):
 
     def _fit(self) -> None:
         self.graph.fit()
+
+    def _export_png(self) -> None:
+        from PySide6.QtWidgets import QFileDialog
+        default = str(self.app.workspaces.reports_dir() / "attack_surface.png")
+        path, _ = QFileDialog.getSaveFileName(self, "Export graph as PNG", default,
+                                              "PNG image (*.png)")
+        if path:
+            if self.graph.export_png(path):
+                self.status_message.emit(f"Graph exported to {path}")
+            else:
+                self.status_message.emit("Nothing to export — add assets first.")
 
     def _clear(self) -> None:
         self.app.attack_surface().clear()

@@ -1,0 +1,12 @@
+{
+  "name": "Forensics Triage",
+  "id": "forensics_triage",
+  "description": "First-pass triage of a file or disk image: metadata, embedded data, strings and carved artefacts.",
+  "inputs": ["file", "outdir"],
+  "steps": [
+    {"tool": "exiftool", "template": "exiftool {file}", "optional": true},
+    {"tool": "binwalk", "template": "binwalk {file}", "optional": true},
+    {"tool": "strings", "template": "strings -n 8 {file}", "optional": true},
+    {"tool": "foremost", "template": "foremost -i {file} -o {outdir}", "optional": true}
+  ]
+}

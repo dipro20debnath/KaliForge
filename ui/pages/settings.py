@@ -111,17 +111,27 @@ class SettingsPage(QWidget):
             lambda: self.s.set("ai.provider", self.ai_provider.currentData()))
         form.addRow("Provider", self.ai_provider)
 
-        self.ai_key = QLineEdit(self.s.get("ai.api_key", ""))
+        self.ai_key = QLineEdit()
         self.ai_key.setEchoMode(QLineEdit.Password)
-        self.ai_key.setPlaceholderText("sk-ant-… (stored locally, chmod 600)")
+        self.ai_key.setPlaceholderText(
+            "sk-ant-…  " + ("(key already stored — leave blank to keep)"
+                            if self.app.ai.has_key() else "(encrypted at rest)"))
         save_key = QPushButton("Save key")
-        save_key.clicked.connect(lambda: self.s.set("ai.api_key", self.ai_key.text().strip()))
+        save_key.clicked.connect(self._save_key)
+        clear_key = QPushButton("Clear")
+        clear_key.setObjectName("Ghost")
+        clear_key.clicked.connect(self._clear_key)
         key_row = QHBoxLayout()
         key_row.addWidget(self.ai_key, 1)
         key_row.addWidget(save_key)
+        key_row.addWidget(clear_key)
         key_wrap = QWidget()
         key_wrap.setLayout(key_row)
         form.addRow("API key", key_wrap)
+        self.vault_lbl = QLabel(f"Key store: {self.app.vault.backend}"
+                                + (" · key set" if self.app.ai.has_key() else " · no key"))
+        self.vault_lbl.setObjectName("Hint")
+        form.addRow(self.vault_lbl)
 
         self.ai_model = QLineEdit(self.s.get("ai.model", "claude-opus-5-5"))
         self.ai_model.editingFinished.connect(
@@ -133,6 +143,20 @@ class SettingsPage(QWidget):
         note.setWordWrap(True)
         form.addRow(note)
         return widget
+
+    def _save_key(self) -> None:
+        value = self.ai_key.text().strip()
+        if not value:
+            return
+        backend = self.app.ai.set_api_key(value)
+        self.ai_key.clear()
+        self.vault_lbl.setText(f"Key store: {backend} · key set")
+
+    def _clear_key(self) -> None:
+        self.app.vault.delete(self.app.ai.KEY_NAME)
+        self.s.set("ai.api_key", "")
+        self.ai_key.clear()
+        self.vault_lbl.setText(f"Key store: {self.app.vault.backend} · no key")
 
     # --------------------------------------------------------------- terminal
     def _terminal_tab(self) -> QWidget:
@@ -147,4 +171,6 @@ class SettingsPage(QWidget):
         self._check(form, "Confirm before closing a terminal with a running process",
                     "terminal.confirm_close_running", True)
         self._check(form, "Record terminal sessions to disk", "terminal.record_sessions", False)
+        self._check(form, "Save & restore terminal tab layout between runs",
+                    "terminal.restore_last_session", False)
         return widget

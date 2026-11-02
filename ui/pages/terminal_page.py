@@ -2,13 +2,17 @@
 command bar, profiles, output export and a split view."""
 from __future__ import annotations
 
+import json
+from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (QComboBox, QFileDialog, QHBoxLayout, QInputDialog,
                                QLabel, QLineEdit, QMessageBox, QPushButton,
-                               QSplitter, QTabWidget, QVBoxLayout, QWidget)
+                               QSplitter, QTabWidget, QToolButton, QVBoxLayout,
+                               QWidget)
 
+from core.config import sessions_dir
 from core.terminal_manager import TerminalSession
 from ui.widgets.terminal_view import TerminalView
 
@@ -16,9 +20,11 @@ from ui.widgets.terminal_view import TerminalView
 class TerminalPane(QWidget):
     """One terminal tab = possibly split into 1-2 sessions side by side."""
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app, parent=None, record: bool = False, cwd: str | None = None):
         super().__init__(parent)
         self.app = app
+        self.record = record
+        self._cwd = cwd
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.splitter = QSplitter(Qt.Horizontal)
@@ -26,6 +32,9 @@ class TerminalPane(QWidget):
         self.views: list[TerminalView] = []
         self._focused: TerminalView | None = None
         self.add_view()
+
+    def cwd(self) -> str:
+        return self._cwd or str(self.app.workspaces.path("output"))
 
     def _profile(self) -> dict:
         name = self.app.settings.get("terminal.default_profile", "Default")
@@ -38,11 +47,18 @@ class TerminalPane(QWidget):
         if len(self.views) >= 2:
             return self._focused or self.views[0]
         prof = self._profile()
-        cwd = self.app.workspaces.path("output") if hasattr(self.app, "workspaces") else None
+        cwd = self._cwd or (str(self.app.workspaces.path("output"))
+                            if hasattr(self.app, "workspaces") else None)
+        self._cwd = cwd
+        record_path = None
+        if self.record:
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            record_path = str(sessions_dir() / f"rec_{stamp}_{len(self.views)}.log")
         session = TerminalSession(
             shell=prof.get("shell") or None,
-            cwd=str(cwd) if cwd else None,
+            cwd=cwd,
             scrollback=int(self.app.settings.get("terminal.scrollback", 10000)),
+            record_path=record_path,
         )
         session.start()
         view = TerminalView(session, prof.get("font_family", "DejaVu Sans Mono"),
@@ -103,10 +119,19 @@ class TerminalPage(QWidget):
         header.addWidget(QLabel("Profile:"))
         header.addWidget(self.profile_box)
 
+        self.record_btn = QToolButton()
+        self.record_btn.setText("⏺ Record")
+        self.record_btn.setCheckable(True)
+        self.record_btn.setChecked(bool(self.app.settings.get("terminal.record_sessions", False)))
+        self.record_btn.toggled.connect(self._toggle_record)
+        header.addWidget(self.record_btn)
+
         for text, slot, name in [
             ("＋ Tab", self.new_tab, "Primary"),
             ("⬌ Split", self.split_current, "Ghost"),
             ("⇩ Export", self.export_output, "Ghost"),
+            ("💾 Save", self.save_session, "Ghost"),
+            ("↺ Restore", self.restore_session, "Ghost"),
             ("✕ Close", self.close_tab, "Ghost"),
         ]:
             btn = QPushButton(text)
@@ -131,14 +156,25 @@ class TerminalPage(QWidget):
         bar.addWidget(send)
         layout.addLayout(bar)
 
-        self.new_tab()
+        self._recording = self.record_btn.isChecked()
+        if self.app.settings.get("terminal.restore_last_session", False):
+            if not self.restore_session(silent=True):
+                self.new_tab()
+        else:
+            self.new_tab()
 
     # ------------------------------------------------------------------ tabs
-    def new_tab(self) -> TerminalPane:
-        pane = TerminalPane(self.app)
+    def new_tab(self, cwd: str | None = None) -> TerminalPane:
+        pane = TerminalPane(self.app, record=self._recording, cwd=cwd)
         index = self.tabs.addTab(pane, f"Terminal {self.tabs.count() + 1}")
         self.tabs.setCurrentIndex(index)
         return pane
+
+    def _toggle_record(self, on: bool) -> None:
+        self._recording = on
+        self.app.settings.set("terminal.record_sessions", on)
+        self.status_message.emit(
+            "Recording new terminals to session logs." if on else "Recording off.")
 
     def current_pane(self) -> TerminalPane | None:
         widget = self.tabs.currentWidget()
@@ -201,7 +237,63 @@ class TerminalPage(QWidget):
             view.session.export_output(path)
             self.status_message.emit(f"Output exported to {path}")
 
+    # --------------------------------------------------------------- sessions
+    def _layout(self) -> dict:
+        tabs = []
+        for i in range(self.tabs.count()):
+            pane = self.tabs.widget(i)
+            if isinstance(pane, TerminalPane):
+                tabs.append({"cwd": pane.cwd(), "panes": len(pane.views)})
+        return {"tabs": tabs}
+
+    def _session_path(self, name: str = "last_session") -> Path:
+        return sessions_dir() / f"{name}.json"
+
+    def save_session(self, name: str | None = None, silent: bool = False) -> None:
+        if name is None and not silent:
+            name, ok = QInputDialog.getText(self, "Save session", "Session name:",
+                                            text="last_session")
+            if not ok or not name.strip():
+                return
+            name = name.strip()
+        path = self._session_path(name or "last_session")
+        try:
+            path.write_text(json.dumps(self._layout(), indent=2), encoding="utf-8")
+        except OSError:
+            return
+        if not silent:
+            self.status_message.emit(f"Session layout saved to {path.name}")
+
+    def restore_session(self, name: str = "last_session", silent: bool = False) -> bool:
+        path = self._session_path(name)
+        if not path.exists():
+            if not silent:
+                self.status_message.emit("No saved session found.")
+            return False
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return False
+        tabs = data.get("tabs", [])
+        if not tabs:
+            return False
+        # clear existing tabs
+        while self.tabs.count():
+            pane = self.tabs.widget(0)
+            if isinstance(pane, TerminalPane):
+                pane.close_all()
+            self.tabs.removeTab(0)
+        for tab in tabs:
+            pane = self.new_tab(cwd=tab.get("cwd"))
+            if tab.get("panes", 1) >= 2:
+                pane.add_view()
+        if not silent:
+            self.status_message.emit(f"Restored {len(tabs)} terminal tab(s).")
+        return True
+
     def shutdown(self) -> None:
+        if self.app.settings.get("terminal.restore_last_session", False):
+            self.save_session(silent=True)
         for i in range(self.tabs.count()):
             pane = self.tabs.widget(i)
             if isinstance(pane, TerminalPane):

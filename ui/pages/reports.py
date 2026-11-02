@@ -40,6 +40,11 @@ class ReportsPage(QWidget):
         form.addRow("Executive summary", self.summary_input)
         layout.addLayout(form)
 
+        from PySide6.QtWidgets import QCheckBox
+        self.embed_chk = QCheckBox("Embed evidence / screenshots in report")
+        self.embed_chk.setChecked(True)
+        layout.addWidget(self.embed_chk)
+
         controls = QHBoxLayout()
         self.fmt_box = QComboBox()
         self.fmt_box.addItems(["Markdown (.md)", "HTML (.html)", "JSON (.json)",
@@ -69,13 +74,15 @@ class ReportsPage(QWidget):
             if status.installed and status.version:
                 tool = self.app.catalog.get(tool_id)
                 versions.append({"name": tool["name"] if tool else tool_id, "version": status.version})
+        evidence = self.app.db.evidence(ws_id)
         return ReportModel(
             title=self.title_input.text().strip() or "Security Assessment Report",
             client=self.client_input.text().strip(),
             workspace=ws["name"] if ws else "",
             author=self.author_input.text().strip(),
             summary=self.summary_input.toPlainText().strip(),
-            scope=scope, findings=findings, tool_versions=versions)
+            scope=scope, findings=findings, tool_versions=versions,
+            evidence=evidence, embed_evidence=self.embed_chk.isChecked())
 
     def _fmt(self) -> str:
         return ["md", "html", "json", "csv", "pdf"][self.fmt_box.currentIndex()]

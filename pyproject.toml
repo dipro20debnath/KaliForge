@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kaliforge"
+version = "1.2.0"
+description = "KaliForge — Cybersecurity Command Center: an all-in-one security toolkit, terminal and reporting dashboard for Kali Linux."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "dipro20debnath", email = "diprogobindo2002@gmail.com" }]
+keywords = ["security", "pentest", "kali", "recon", "forensics", "dashboard"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: Information Technology",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+]
+dependencies = [
+    "PySide6>=6.6",
+    "psutil>=5.9",
+    "pyte>=0.8.1",
+    "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+vault = ["cryptography>=41", "keyring>=24"]
+dev = ["pytest>=7.4"]
+
+[project.urls]
+Homepage = "https://github.com/dipro20debnath/KaliForge"
+Repository = "https://github.com/dipro20debnath/KaliForge"
+Issues = "https://github.com/dipro20debnath/KaliForge/issues"
+
+[project.scripts]
+kaliforge = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+include = ["core*", "ui*", "tools*", "database*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

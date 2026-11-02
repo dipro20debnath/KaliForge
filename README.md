@@ -84,7 +84,7 @@ KaliForge manages offensive tools, so its own guard-rails matter:
 - **Destructive-command detection** — `rm -rf`, `mkfs`, `dd of=/dev/…`, remote-pipe-to-shell and more trigger an explicit confirmation.
 - **Audit log** — every command decision is written to `~/.local/share/kaliforge/logs/audit.jsonl` and the database.
 - **No hidden execution** — nothing runs without passing the permission flow.
-- **Local API-key storage** — AI keys are stored in your user config (`chmod 600`), never transmitted anywhere except the chosen provider.
+- **Encrypted API-key vault** — AI keys are stored in the system keyring or an AES-encrypted file (`cryptography` Fernet, `0600`), never in plaintext, and only ever sent to the chosen provider.
 
 See [`SECURITY.md`](SECURITY.md) for the full model.
 
@@ -101,9 +101,15 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and
 QT_QPA_PLATFORM=offscreen python3 -m pytest
 ```
 
-52 headless tests cover the catalog, scope/permission engine, command builder,
-database, reporting, managers, the advanced Phase 3–5 modules and a full UI
-smoke test.
+59 headless tests cover the catalog, scope/permission engine, command builder,
+database, reporting (with evidence embedding), managers, the advanced Phase 3–5
+modules, the encrypted vault, and a full UI smoke test. CI runs them on Python
+3.11 and 3.12 and builds a wheel.
+
+### Keyboard shortcuts
+
+`Ctrl+K` / `Ctrl+P` command palette · `Ctrl+T` terminal · `Ctrl+D` dashboard ·
+`Ctrl+L` arsenal · `Ctrl+R` reports · `Ctrl+Shift+S` scope.
 
 ## License
 

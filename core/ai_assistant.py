@@ -104,20 +104,39 @@ class AIResponse:
 
 
 class AIAssistant:
-    def __init__(self, settings=None, catalog: Catalog | None = None):
+    KEY_NAME = "anthropic_api_key"
+
+    def __init__(self, settings=None, catalog: Catalog | None = None, vault=None):
         self.settings = settings
         self.catalog = catalog or Catalog()
+        self.vault = vault
 
     # ------------------------------------------------------------------ keys
     def provider(self) -> str:
         return (self.settings.get("ai.provider", "offline") if self.settings else "offline")
 
     def api_key(self) -> str:
+        if self.vault is not None and self.vault.available:
+            key = self.vault.get(self.KEY_NAME)
+            if key:
+                return key
         if self.settings:
             key = self.settings.get("ai.api_key", "")
             if key:
                 return key
         return os.environ.get("ANTHROPIC_API_KEY", "")
+
+    def set_api_key(self, value: str) -> str:
+        """Store the key in the vault (preferred) or settings; returns backend."""
+        value = (value or "").strip()
+        if self.vault is not None and self.vault.available:
+            self.vault.set(self.KEY_NAME, value)
+            if self.settings:
+                self.settings.set("ai.api_key", "")   # never keep plaintext copy
+            return self.vault.backend
+        if self.settings:
+            self.settings.set("ai.api_key", value)
+        return "settings-file"
 
     def has_key(self) -> bool:
         return bool(self.api_key())
