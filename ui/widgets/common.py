@@ -1,9 +1,35 @@
 """Reusable presentational widgets shared across pages."""
 from __future__ import annotations
 
-from PySide6.QtCore import QRect, QSize, Qt, Signal
-from PySide6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QLayout, QProgressBar,
-                               QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtCore import (QEasingCurve, QRect, QSize, Qt, QVariantAnimation,
+                            Signal)
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (QFrame, QGraphicsDropShadowEffect, QHBoxLayout,
+                               QLabel, QLayout, QProgressBar, QPushButton,
+                               QSizePolicy, QVBoxLayout, QWidget)
+
+
+def apply_shadow(widget: QWidget, blur: int = 24, y: int = 6,
+                 color: str = "#000000", alpha: int = 110) -> None:
+    """Attach a soft drop shadow to a widget (one effect per widget)."""
+    effect = QGraphicsDropShadowEffect(widget)
+    effect.setBlurRadius(blur)
+    col = QColor(color)
+    col.setAlpha(alpha)
+    effect.setColor(col)
+    effect.setOffset(0, y)
+    widget.setGraphicsEffect(effect)
+
+
+def apply_pointer_cursors(root: QWidget) -> None:
+    """Give every clickable control a pointing-hand cursor (mouse-art polish)."""
+    from PySide6.QtWidgets import QAbstractButton, QComboBox, QTabBar
+    for cls in (QAbstractButton, QComboBox, QTabBar):
+        for w in root.findChildren(cls):
+            try:
+                w.setCursor(Qt.PointingHandCursor)
+            except Exception:  # noqa: BLE001
+                pass
 
 
 class Card(QFrame):
@@ -39,9 +65,30 @@ class StatCard(Card):
             self._layout.addWidget(cap)
         self._layout.addStretch(1)
         self.setMinimumHeight(118)
+        self._current = 0
+        self._anim: QVariantAnimation | None = None
+        apply_shadow(self, blur=22, y=5, alpha=90)
 
     def set_value(self, value) -> None:
-        self.value_lbl.setText(str(value))
+        # animate count-up when both old and new are integers
+        try:
+            target = int(value)
+        except (TypeError, ValueError):
+            self.value_lbl.setText(str(value))
+            return
+        start = self._current
+        self._current = target
+        if start == target:
+            self.value_lbl.setText(str(target))
+            return
+        anim = QVariantAnimation(self)
+        anim.setStartValue(start)
+        anim.setEndValue(target)
+        anim.setDuration(520)
+        anim.setEasingCurve(QEasingCurve.OutCubic)
+        anim.valueChanged.connect(lambda v: self.value_lbl.setText(str(int(v))))
+        anim.start()
+        self._anim = anim
 
     def mousePressEvent(self, event):  # noqa: N802
         if event.button() == Qt.LeftButton:
@@ -69,11 +116,19 @@ class Meter(QWidget):
         self.bar.setTextVisible(False)
         self.bar.setRange(0, 100)
         layout.addWidget(self.bar)
+        self._anim: QVariantAnimation | None = None
 
     def set_value(self, percent: float, caption: str | None = None) -> None:
         percent = max(0, min(100, int(round(percent))))
-        self.bar.setValue(percent)
         self.value_lbl.setText(caption if caption is not None else f"{percent}%")
+        anim = QVariantAnimation(self)
+        anim.setStartValue(self.bar.value())
+        anim.setEndValue(percent)
+        anim.setDuration(360)
+        anim.setEasingCurve(QEasingCurve.OutCubic)
+        anim.valueChanged.connect(lambda v: self.bar.setValue(int(v)))
+        anim.start()
+        self._anim = anim
 
 
 class Badge(QLabel):

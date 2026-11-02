@@ -58,6 +58,8 @@ class CommandPalette(QDialog):
         self.list.itemActivated.connect(lambda _it: self._run_current())
         layout.addWidget(self.list)
         self.search.installEventFilter(self)
+        from ui.widgets.common import apply_pointer_cursors
+        apply_pointer_cursors(self)
         self._filter("")
 
     def eventFilter(self, obj, event):  # noqa: N802

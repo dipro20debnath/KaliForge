@@ -2,10 +2,14 @@
 cross-page signals (run a command → terminal, open details, etc.)."""
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QStackedWidget,
-                               QStatusBar, QWidget)
+from PySide6.QtWidgets import (QGraphicsOpacityEffect, QHBoxLayout, QLabel,
+                               QMainWindow, QPushButton, QStackedWidget,
+                               QStatusBar, QVBoxLayout, QWidget)
+
+from core.categories import CATEGORY_BY_ID
+from ui.widgets.common import apply_pointer_cursors
 
 from core.config import APP_NAME
 from ui.pages.ai_assistant import AssistantPage
@@ -39,6 +43,22 @@ from ui.theme import stylesheet
 from ui.widgets.command_palette import CommandPalette, PaletteEntry
 from ui.widgets.tool_detail import ToolDetailDialog
 
+# key -> (icon, title) for the top header bar
+PAGE_META = {
+    "dashboard": ("📊", "Dashboard"), "arsenal": ("🧰", "Tool Arsenal"),
+    "terminal": ("💻", "Command Center"), "vulnerability": ("🛡", "Vulnerability Assessment"),
+    "workflows": ("⚙", "Workflows"), "assistant": ("🤖", "AI Command Assistant"),
+    "scope": ("🎯", "Scope Manager"), "methodology": ("✅", "Methodology Checklist"),
+    "monitor": ("📈", "System Monitor"), "attack_surface": ("🕸", "Attack Surface Mapper"),
+    "hosts": ("🖥", "Hosts"), "tool_health": ("🩺", "Tool Health Monitor"),
+    "installer": ("📦", "Installation Manager"), "learning": ("🎓", "Learning & Practice"),
+    "lab_env": ("🐳", "Lab Environments"), "toolkit": ("🔧", "Crypto Toolkit"),
+    "payloads": ("🐚", "Payload Generator"), "importer": ("📥", "Scan Import"),
+    "workspaces": ("🗂", "Workspaces"), "vault": ("📓", "Vault & Notes"),
+    "credentials": ("🔑", "Credentials Manager"), "evidence": ("🔬", "Evidence & Labs"),
+    "reports": ("📄", "Reports"), "plugins": ("🧩", "Plugins"), "settings": ("⚙", "Settings"),
+}
+
 
 class MainWindow(QMainWindow):
     def __init__(self, app):
@@ -58,18 +78,66 @@ class MainWindow(QMainWindow):
         self.sidebar.navigate.connect(self.navigate)
         root.addWidget(self.sidebar)
 
+        right = QWidget()
+        right_layout = QVBoxLayout(right)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(0)
+        right_layout.addWidget(self._build_header())
         self.stack = QStackedWidget()
-        root.addWidget(self.stack, 1)
+        right_layout.addWidget(self.stack, 1)
+        root.addWidget(right, 1)
 
         self._pages: dict[str, QWidget] = {}
+        self._page_anim = None
         self._build_pages()
 
         self.setStatusBar(QStatusBar())
         self._apply_theme(self.app.settings.get("appearance.theme", "kali_neon"))
         self._install_shortcuts()
+        self._refresh_ws_chip()
+        apply_pointer_cursors(self)
 
         self.sidebar.select("dashboard")
         self.navigate("dashboard")
+
+    # ------------------------------------------------------------- header
+    def _build_header(self) -> QWidget:
+        bar = QWidget()
+        bar.setObjectName("TopBar")
+        bar.setFixedHeight(58)
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(22, 0, 20, 0)
+        layout.setSpacing(12)
+        self.header_icon = QLabel("📊")
+        self.header_icon.setObjectName("TopIcon")
+        self.header_title = QLabel("Dashboard")
+        self.header_title.setObjectName("TopTitle")
+        layout.addWidget(self.header_icon)
+        layout.addWidget(self.header_title)
+        layout.addStretch(1)
+        self.ws_chip = QLabel("")
+        self.ws_chip.setObjectName("WsChip")
+        layout.addWidget(self.ws_chip)
+        search = QPushButton("  ⌕  Search    Ctrl+K")
+        search.setObjectName("SearchBtn")
+        search.setMinimumWidth(190)
+        search.clicked.connect(self.open_palette)
+        layout.addWidget(search)
+        return bar
+
+    def _refresh_ws_chip(self) -> None:
+        ws = self.app.workspaces.active()
+        self.ws_chip.setText(f"◆ {ws['name']}" if ws else "")
+
+    def _set_header(self, key: str) -> None:
+        meta = PAGE_META.get(key)
+        if not meta and key.startswith("cat:"):
+            cat = CATEGORY_BY_ID.get(key.split(":", 1)[1].replace("recon2", "recon"))
+            if cat:
+                meta = (cat.get("icon", "🧰"), cat["name"])
+        if meta:
+            self.header_icon.setText(meta[0])
+            self.header_title.setText(meta[1])
 
     # ------------------------------------------------------------- shortcuts
     def _install_shortcuts(self) -> None:
@@ -216,17 +284,37 @@ class MainWindow(QMainWindow):
             self.arsenal.set_category(category)
             self.stack.setCurrentWidget(self.arsenal)
             self.sidebar.select(key)
+            self._set_header(key)
+            self._fade_in(self.arsenal)
             return
         page = self._pages.get(key)
         if page:
             self.stack.setCurrentWidget(page)
             self.sidebar.select(key)
+            self._set_header(key)
+            self._fade_in(page)
             if key == "vulnerability":
                 self.vulnerability.refresh()
             elif key == "dashboard":
                 self.dashboard.refresh()
             elif key == "hosts":
                 self.hosts.refresh()
+
+    def _fade_in(self, widget: QWidget) -> None:
+        """Brief fade/opacity transition when a page becomes current."""
+        try:
+            effect = QGraphicsOpacityEffect(widget)
+            widget.setGraphicsEffect(effect)
+            anim = QPropertyAnimation(effect, b"opacity", self)
+            anim.setDuration(170)
+            anim.setStartValue(0.35)
+            anim.setEndValue(1.0)
+            anim.setEasingCurve(QEasingCurve.OutCubic)
+            anim.finished.connect(lambda: widget.setGraphicsEffect(None))
+            anim.start()
+            self._page_anim = anim
+        except Exception:  # noqa: BLE001
+            pass
 
     def _add_host_to_scope(self, host: str) -> None:
         if host:
@@ -240,6 +328,7 @@ class MainWindow(QMainWindow):
         self._status("Scan data imported into findings, hosts and attack surface.")
 
     def _on_workspace_switched(self) -> None:
+        self._refresh_ws_chip()
         # the active workspace changed — refresh everything workspace-scoped
         for page in (self.dashboard, self.vulnerability, self.hosts, self.scope,
                      self.attack_surface, self.methodology, self.credentials,

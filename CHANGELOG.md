@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.1 — Design & motion
+
+### Changed
+- **Richer theme** — gradient surfaces, accent-gradient primary buttons, card
+  hover elevation/glow, focus rings on inputs, nicer tabs, tables, checkboxes
+  and scrollbars, across all three colour schemes.
+- **App header bar** — a persistent top bar shows the current page's icon and
+  title, the active workspace chip, and a `⌕ Search  Ctrl+K` button (flow /
+  directional context).
+- **Motion** — fade-in page transitions, count-up animation on dashboard stat
+  tiles, and smoothly animated resource meters.
+- **Mouse art** — pointing-hand cursors on every clickable control, hover
+  highlights on nav items (left accent bar), cards, chips, table rows and
+  splitters; soft drop shadows on stat tiles for depth.
+
 ## 1.4.0 — Tracking & workspaces
 
 ### Added

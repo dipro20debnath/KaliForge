@@ -166,6 +166,11 @@ See [`SECURITY.md`](SECURITY.md) for the full model.
 
 Python 3 · PySide6 (Qt) · SQLite · psutil · pyte (terminal emulation) · ReportLab.
 
+The UI uses a persistent header bar (page icon/title, active workspace, quick
+search), gradient surfaces with hover elevation, fade-in page transitions,
+animated stat tiles and meters, and pointing-hand cursors throughout — themed
+across three colour schemes (Kali Neon, Cyber Cyan, SOC Pro).
+
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and
 [`docs/USAGE.md`](docs/USAGE.md) for a walkthrough.
 
