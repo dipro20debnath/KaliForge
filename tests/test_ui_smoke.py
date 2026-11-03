@@ -53,6 +53,37 @@ def test_mainwindow_builds_and_navigates(qapp, app):
     window.close()
 
 
+def test_workflow_updates_cross_thread(qapp, app):
+    """Regression: the workflow engine runs on a worker thread; its step/finish
+    callbacks must reach the UI (a worker-thread QTimer.singleShot would not
+    fire). The page bridges them with queued signals."""
+    import threading
+    import time
+
+    from PySide6.QtCore import QEventLoop
+    from core.workflow_engine import StepResult, WorkflowRun
+    from ui.pages.workflows import WorkflowsPage
+
+    page = WorkflowsPage(app)
+    done = {"finished": False}
+    page._run_finished.connect(lambda run: done.__setitem__("finished", True))
+
+    def worker():  # emulate the engine's background thread
+        page._on_step(StepResult(index=0, tool="nmap", command="nmap x", status="done"))
+        page._on_done(WorkflowRun(name="t", target="x", outdir="/tmp"))
+
+    t = threading.Thread(target=worker)
+    t.start()
+    t.join()
+    for _ in range(40):
+        qapp.processEvents(QEventLoop.AllEvents, 20)
+        time.sleep(0.01)
+        if done["finished"]:
+            break
+    assert page.table.rowCount() >= 1   # step rendered on the UI thread
+    assert done["finished"]             # finish delivered to the UI thread
+
+
 def test_scope_roundtrip_in_ui(qapp, app):
     from ui.pages.scope import ScopePage
     page = ScopePage(app)

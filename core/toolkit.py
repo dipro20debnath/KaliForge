@@ -20,14 +20,21 @@ def _b64_enc(s: str) -> str:
 
 
 def _b64_dec(s: str) -> str:
-    pad = "=" * (-len(s.strip()) % 4)
-    return base64.b64decode(s.strip() + pad).decode("utf-8", "replace")
+    s = re.sub(r"\s", "", s.strip())
+    pad = "=" * (-len(s) % 4)
+    try:
+        return base64.b64decode(s + pad).decode("utf-8", "replace")
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError(f"not valid Base64 ({exc})") from exc
 
 
 def _b64url_dec(s: str) -> str:
-    s = s.strip()
+    s = re.sub(r"\s", "", s.strip())
     pad = "=" * (-len(s) % 4)
-    return base64.urlsafe_b64decode(s + pad).decode("utf-8", "replace")
+    try:
+        return base64.urlsafe_b64decode(s + pad).decode("utf-8", "replace")
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError(f"not valid URL-safe Base64 ({exc})") from exc
 
 
 def _b32_enc(s: str) -> str:
@@ -35,7 +42,12 @@ def _b32_enc(s: str) -> str:
 
 
 def _b32_dec(s: str) -> str:
-    return base64.b32decode(s.strip()).decode("utf-8", "replace")
+    s = re.sub(r"\s", "", s.strip()).upper()
+    s += "=" * (-len(s) % 8)
+    try:
+        return base64.b32decode(s).decode("utf-8", "replace")
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError(f"not valid Base32 ({exc})") from exc
 
 
 def _hex_enc(s: str) -> str:
@@ -43,8 +55,11 @@ def _hex_enc(s: str) -> str:
 
 
 def _hex_dec(s: str) -> str:
-    cleaned = re.sub(r"[\s:]", "", s.strip())
-    return bytes.fromhex(cleaned).decode("utf-8", "replace")
+    cleaned = re.sub(r"(?i)^0x|[\s:,]", "", s.strip())
+    try:
+        return bytes.fromhex(cleaned).decode("utf-8", "replace")
+    except ValueError as exc:
+        raise ValueError(f"not valid hex ({exc})") from exc
 
 
 def _url_enc(s: str) -> str:
@@ -84,7 +99,10 @@ def _a85_enc(s: str) -> str:
 
 
 def _a85_dec(s: str) -> str:
-    return base64.a85decode(s.strip()).decode("utf-8", "replace")
+    try:
+        return base64.a85decode(s.strip()).decode("utf-8", "replace")
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError(f"not valid ASCII85 ({exc})") from exc
 
 
 OPERATIONS = {

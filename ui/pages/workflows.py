@@ -13,10 +13,17 @@ from core.config import WORKFLOWS_DIR
 
 class WorkflowsPage(QWidget):
     status_message = Signal(str)
+    # cross-thread bridges: the engine runs on a worker thread and emits these;
+    # Qt delivers them queued on the UI thread (QTimer.singleShot would not fire
+    # from a thread that has no event loop).
+    _step_ready = Signal(object)
+    _run_finished = Signal(object)
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self.app = app
+        self._step_ready.connect(self._render_step)
+        self._run_finished.connect(self._finish)
         self.engine = WorkflowEngine(
             tool_manager=app.tools, scope=app.scope, audit=app.audit,
             enforce_scope=app.settings.get("security.scope_mode", "warn") != "off")
@@ -116,11 +123,8 @@ class WorkflowsPage(QWidget):
             on_step=self._on_step, on_done=self._on_done, background=True)
 
     def _on_step(self, step) -> None:
-        # called from worker thread → marshal via Qt's queued signals would be
-        # ideal; for simplicity we update directly (PySide allows cross-thread
-        # item set for simple widgets, but we guard with a single-shot).
-        from PySide6.QtCore import QTimer
-        QTimer.singleShot(0, lambda: self._render_step(step))
+        # called from the engine's worker thread; emit to hop to the UI thread
+        self._step_ready.emit(step)
 
     def _render_step(self, step) -> None:
         row = step.index
@@ -132,8 +136,7 @@ class WorkflowsPage(QWidget):
         self.table.setItem(row, 3, QTableWidgetItem(step.note or step.command))
 
     def _on_done(self, run) -> None:
-        from PySide6.QtCore import QTimer
-        QTimer.singleShot(0, lambda: self._finish(run))
+        self._run_finished.emit(run)
 
     def _finish(self, run) -> None:
         self.run_btn.setEnabled(True)

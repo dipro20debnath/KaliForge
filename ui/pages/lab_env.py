@@ -16,11 +16,16 @@ _DIFF_COLOR = {"beginner": "#2ecc71", "intermediate": "#ffd23f", "advanced": "#f
 
 class LabEnvPage(QWidget):
     status_message = Signal(str)
+    # worker-thread → UI-thread bridges (docker runs on a ManagedProcess thread)
+    _start_result = Signal(object)
+    _stop_result = Signal()
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self.app = app
         self._cards: dict[str, "LabCard"] = {}
+        self._start_result.connect(self._handle_start_done)
+        self._stop_result.connect(self.refresh)
         self._build()
         self.refresh()
 
@@ -99,25 +104,24 @@ class LabEnvPage(QWidget):
             return
         self.status_message.emit(
             f"Starting {lab.name}… the first run pulls the image and can take a minute.")
-        self.app.labs_env.start(lab, on_done=self._on_start_done)
-        QTimer.singleShot(4000, self.refresh)
+        # on_done fires on the worker thread → emit a signal to reach the UI thread
+        self.app.labs_env.start(lab, on_done=lambda r: self._start_result.emit(r))
+        QTimer.singleShot(4000, self.refresh)   # from the UI thread — OK
 
-    def _on_start_done(self, result) -> None:
-        def show():
-            self.refresh()
-            if result.ok:
-                self.status_message.emit("Lab started.")
-            else:
-                tail = "\n".join(result.output.splitlines()[-6:]) or result.error
-                self.status_message.emit("Lab failed to start — see details.")
-                QMessageBox.critical(self, "Lab failed to start",
-                                     f"`{result.command}` exited with code {result.returncode}.\n\n{tail}")
-        QTimer.singleShot(0, show)
+    def _handle_start_done(self, result) -> None:
+        self.refresh()
+        if result.ok:
+            self.status_message.emit("Lab started.")
+        else:
+            tail = "\n".join(result.output.splitlines()[-6:]) or result.error
+            self.status_message.emit("Lab failed to start — see details.")
+            QMessageBox.critical(self, "Lab failed to start",
+                                 f"`{result.command}` exited with code {result.returncode}.\n\n{tail}")
 
     def _stop(self, lab) -> None:
         self.status_message.emit(f"Stopping {lab.name} …")
-        self.app.labs_env.stop(lab, on_done=lambda r: QTimer.singleShot(0, self.refresh))
-        QTimer.singleShot(1500, self.refresh)
+        self.app.labs_env.stop(lab, on_done=lambda r: self._stop_result.emit())
+        QTimer.singleShot(1500, self.refresh)   # from the UI thread — OK
 
     def _add_scope(self, lab) -> None:
         self.app.scope.add(lab.target.split(":")[0])
